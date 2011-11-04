@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Xml.Linq;
 
 namespace ExcelUtility.Impl
 {
@@ -9,6 +7,10 @@ namespace ExcelUtility.Impl
     {
         #region IWorksheet Members
 
+        public string Name { get; set; }
+        
+        public int SheetId { get; set; }
+        
         public Column GetColumn(string name)
         {
             throw new NotImplementedException();
@@ -27,6 +29,11 @@ namespace ExcelUtility.Impl
         public Shape DrawShape(double x, double y, double width, double height)
         {
             throw new NotImplementedException();
+        }
+
+        public void SaveChanges(string worksheetsPath)
+        {
+            XDocument worksheet = XDocument.Load(string.Format("{0}/sheet{1}.xml", worksheetsPath, SheetId));
         }
 
         #endregion

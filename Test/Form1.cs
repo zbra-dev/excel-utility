@@ -21,10 +21,12 @@ namespace Test
 
         private void button1_Click(object sender, EventArgs e)
         {
-            using (ExcelFile file = ExcelFile.Open(@"D:\temp\Sheet4.xlsx"))
+            using (ExcelFile file = ExcelFile.Open(@"D:\temp\Sheet3.xlsx"))
             {
                 IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
-                Column column = sheet1.GetColumn("E");
+                
+                //file.Dispose();
+                /*Column column = sheet1.GetColumn("E");
                 column.Width = 4.57;
                 Cell cell = sheet1.GetCell("E1");
                 cell.Value = "1235435";
@@ -35,6 +37,7 @@ namespace Test
                 shape.MarginTop = 10;
                 shape.MarginBottom = 10;
                 shape.Text = "12345";
+                 * */
             }
         }
     }
