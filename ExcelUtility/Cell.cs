@@ -1,29 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ExcelUtility.Impl;
+﻿using System.Xml.Linq;
 
 namespace ExcelUtility
 {
     public class Cell
     {
-        private Worksheet worksheet;
         private string value;
-
+        
+        public XElement XElementCell { get; set; }
         public string Value { get { return value; } set { SetValue(value); } }
-
         public string Name { get; private set; }
 
-        internal Cell(Worksheet worksheet, string name)
+        internal Cell(string name)
         {
-            this.worksheet = worksheet;
             Name = name;
         }
 
         private void SetValue(string value)
         {
-            // set value in worksheet XML
+            double numeric;
+            if (!double.TryParse(value, out numeric))
+            {
+                //look at sharedStrings.xml if this one exists and add reference, if not create at sharedStrings.xml and referenced it.
+                //XElementCell.SetElementValue(XName.Get("v", XElementCell.GetDefaultNamespace().ToString()), sharedStringIndex);
+            }
+            else
+            {
+                //XElementCell.SetElementValue(XName.Get("v", XElementCell.GetDefaultNamespace().ToString()), value);
+                XElementCell.SetElementValue(XElementCell.GetDefaultNamespace() + "v", value);
+            }
             this.value = value;
         }
     }

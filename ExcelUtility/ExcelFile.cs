@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Linq;
-using System.IO;
-using System.IO.Compression;
 using System.Collections.Generic;
-using ICSharpCode.SharpZipLib.Zip;
+using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using ExcelUtility.Impl;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace ExcelUtility
 {
@@ -36,23 +35,25 @@ namespace ExcelUtility
             decompressPath = string.Format(@"D:/temp/{0}/", Path.GetFileNameWithoutExtension(filePath));
             new FastZip().ExtractZip(filePath, decompressPath, null);
             workbook = GetWorkbook(decompressPath, XDocument.Load(string.Format("{0}[Content_Types].xml", decompressPath)));
-            workbook.Worksheets = GetWorksheets(XDocument.Load(workbook.WorkbookPath));
+            workbook.Worksheets = GetWorksheets(workbook);
         }
 
         private Workbook GetWorkbook(string rootPath, XDocument contentTypes)
         {
-            return (from workbook in contentTypes.Descendants(XName.Get("Override", contentTypes.Root.GetDefaultNamespace().ToString()))
+            return (from workbook in contentTypes.Descendants(contentTypes.Root.GetDefaultNamespace() + "Override")
                     select new Workbook 
                     {
                         WorkbookPath = string.Format("{0}{1}", rootPath, workbook.Attribute("PartName").Value)
                     }).FirstOrDefault();
         }
 
-        private IList<IWorksheet> GetWorksheets(XDocument workbook)
+        private IList<IWorksheet> GetWorksheets(Workbook workbook)
         {
-            return (from sheet in workbook.Descendants(XName.Get("sheet", workbook.Root.GetDefaultNamespace().ToString()))
+            XDocument workbookData = XDocument.Load(workbook.WorkbookPath);
+            return (from sheet in workbookData.Descendants(workbookData.Root.GetDefaultNamespace() + "sheet", )
                     select (IWorksheet)new Worksheet()
                     {
+                        Sheet = XElement.Load(string.Format("{0}/worksheets/sheet{1}.xml", Path.GetDirectoryName(workbook.WorkbookPath), sheet.Attribute("sheetId").Value)),
                         Name = sheet.Attribute("name").Value,
                         SheetId = Convert.ToInt32(sheet.Attribute("sheetId").Value)
                     }).ToList();

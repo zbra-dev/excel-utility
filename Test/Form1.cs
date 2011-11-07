@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.IO;
 using ExcelUtility;
 using System.Xml;
+using System.Text.RegularExpressions;
 
 namespace Test
 {
@@ -24,12 +25,16 @@ namespace Test
             using (ExcelFile file = ExcelFile.Open(@"D:\temp\Sheet3.xlsx"))
             {
                 IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
-                
-                //file.Dispose();
-                /*Column column = sheet1.GetColumn("E");
-                column.Width = 4.57;
-                Cell cell = sheet1.GetCell("E1");
-                cell.Value = "1235435";
+                //Column column = sheet1.GetColumn("E");
+                //column.Width = 4.57;
+                Cell e1 = sheet1.GetCell("E1");
+                e1.Value = "1235435";
+                Cell c1 = sheet1.GetCell("C1");
+                c1.Value = "3443";
+                //Cell d1 = sheet1.GetCell("D1");
+                //c1.Value = "TextoExemplo";
+
+                /*
                 Shape shape = sheet1.DrawShape(0, 0, 100, 100);
                 shape.ForeColor = Color.Black;
                 shape.MarginLeft = 10;
@@ -37,7 +42,7 @@ namespace Test
                 shape.MarginTop = 10;
                 shape.MarginBottom = 10;
                 shape.Text = "12345";
-                 * */
+                */
             }
         }
     }
