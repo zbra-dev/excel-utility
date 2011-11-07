@@ -55,8 +55,7 @@ namespace ExcelUtility.Impl
         private Cell CreateNewCell(string name)
         {
             XElement newCell = new XElement(Sheet.GetDefaultNamespace() + "c", new XElement(Sheet.GetDefaultNamespace() + "v"));
-            newCell.SetAttributeValue("r", name);
-
+            newCell.SetAttributeValue(Sheet.GetDefaultNamespace() + "r", name);
             XElement row = Sheet.Descendants(Sheet.GetDefaultNamespace() + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
             //Check if row is null.
             row.Add(newCell);

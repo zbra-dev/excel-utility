@@ -29,8 +29,8 @@ namespace Test
                 //column.Width = 4.57;
                 Cell e1 = sheet1.GetCell("E1");
                 e1.Value = "1235435";
-                Cell c1 = sheet1.GetCell("C1");
-                c1.Value = "3443";
+                //Cell c1 = sheet1.GetCell("C1");
+                //c1.Value = "3443";
                 //Cell d1 = sheet1.GetCell("D1");
                 //c1.Value = "TextoExemplo";
 

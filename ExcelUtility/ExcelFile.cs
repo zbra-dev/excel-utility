@@ -50,7 +50,7 @@ namespace ExcelUtility
         private IList<IWorksheet> GetWorksheets(Workbook workbook)
         {
             XDocument workbookData = XDocument.Load(workbook.WorkbookPath);
-            return (from sheet in workbookData.Descendants(workbookData.Root.GetDefaultNamespace() + "sheet", )
+            return (from sheet in workbookData.Descendants(workbookData.Root.GetDefaultNamespace() + "sheet")
                     select (IWorksheet)new Worksheet()
                     {
                         Sheet = XElement.Load(string.Format("{0}/worksheets/sheet{1}.xml", Path.GetDirectoryName(workbook.WorkbookPath), sheet.Attribute("sheetId").Value)),
