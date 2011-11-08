@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using System.Text.RegularExpressions;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace ExcelUtility.Impl
 {
@@ -13,6 +14,7 @@ namespace ExcelUtility.Impl
 
         private XElement sheet;
         private XNamespace Namespace { get { return sheet.GetDefaultNamespace(); } }
+
         public SharedStrings SharedStrings { get; set; }
         public string Name { get; set; }
         public int SheetId { get; set; }
@@ -55,6 +57,28 @@ namespace ExcelUtility.Impl
         {
             SharedStrings.Save(xmlPath);
             sheet.Save(string.Format("{0}/worksheets/sheet{1}.xml", xmlPath, SheetId));
+        }
+
+        public void RemoveUnusedStringReferences(IList<StringReference> unusedStringRefences)
+        {
+            IEnumerable<XElement> cells = (from cell in sheet.Descendants(Namespace + "c")
+                                           where cell.Attribute("t") != null && cell.Attribute("t").Value == "s"
+                                           select cell).ToList();
+            foreach (XElement cell in cells)
+                if (unusedStringRefences.Any(c => c.Index == Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value)))
+                    unusedStringRefences.Remove(unusedStringRefences.First(c => c.Index == Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value)));       
+        }
+
+        public void UpdateStringReferences(IList<StringReference> stringRefences)
+        {
+            foreach (StringReference stringReference in stringRefences)
+            {
+                IList<XElement> cells = (from cell in sheet.Descendants(Namespace + "c")
+                                             where cell.Attribute("t") != null && cell.Attribute("t").Value == "s" && Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value) == stringReference.OldIndex
+                                             select cell).ToList();
+                foreach(XElement cell in cells)
+                    cell.Descendants(Namespace + "v").First().Value = stringReference.Index.ToString();
+            }
         }
 
         #endregion

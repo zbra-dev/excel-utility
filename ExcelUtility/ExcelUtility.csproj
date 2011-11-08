@@ -49,6 +49,7 @@
     <Compile Include="Column.cs" />
     <Compile Include="ExcelFile.cs" />
     <Compile Include="Impl\SharedStrings.cs" />
+    <Compile Include="Impl\StringReference.cs" />
     <Compile Include="Impl\Workbook.cs" />
     <Compile Include="Impl\Worksheet.cs" />
     <Compile Include="IWorksheet.cs" />

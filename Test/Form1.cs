@@ -35,10 +35,10 @@ namespace Test
                 c1.Value = "3443";
                 
                 //Text
-                Cell b1 = sheet1.GetCell("B1");
-                b1.Value = "Atwood Falcon"; //Existing text - index = 7;
-                Cell d1 = sheet1.GetCell("D1");
-                d1.Value = "New Text"; //new Text
+                //Cell b1 = sheet1.GetCell("B1");
+                //b1.Value = "Atwood Falcon"; //Existing text - index = 7;
+                //Cell d1 = sheet1.GetCell("D1");
+                //d1.Value = "New Text"; //new Text
 
                 /*
                 Shape shape = sheet1.DrawShape(0, 0, 100, 100);

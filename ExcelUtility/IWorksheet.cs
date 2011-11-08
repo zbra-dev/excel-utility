@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
+﻿using System.Collections.Generic;
 using ExcelUtility.Impl;
 
 namespace ExcelUtility
@@ -17,6 +13,9 @@ namespace ExcelUtility
         Row GetRow(string name);
         Cell GetCell(string name);
         Shape DrawShape(double x, double y, double width, double height);
+        
         void SaveChanges(string xmlPath);
+        void RemoveUnusedStringReferences(IList<StringReference> unusedStringRefences);
+        void UpdateStringReferences(IList<StringReference> stringRefences);
     }
 }

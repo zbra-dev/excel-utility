@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 
 namespace ExcelUtility.Impl
@@ -10,7 +9,7 @@ namespace ExcelUtility.Impl
     {
         private XElement sharedStringsData;
         private XNamespace Namespace { get { return sharedStringsData.GetDefaultNamespace(); } }
-
+        
         public SharedStrings(XElement sharedStringsData)
         {
             this.sharedStringsData = sharedStringsData;
@@ -19,6 +18,48 @@ namespace ExcelUtility.Impl
         public void Save(string xmlPath)
         {
             sharedStringsData.Save(string.Format("{0}/sharedStrings.xml",xmlPath));
+        }
+
+        public void CleanUpReferences(IList<IWorksheet> worksheets)
+        {
+            //prepare a list with all references
+            IList<StringReference> unusedStringReferences = new List<StringReference>();
+            IList<StringReference> stringRefences = new List<StringReference>();
+
+            int index = 0;
+            foreach (XElement element in sharedStringsData.Descendants(Namespace + "si"))
+            {
+                unusedStringReferences.Add(new StringReference() { Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
+                stringRefences.Add(new StringReference() { Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
+                index++;
+            }
+                
+            foreach (IWorksheet worksheet in worksheets)
+            {
+                //send this list to worksheet, the itens founded there are removed from it.
+                worksheet.RemoveUnusedStringReferences(unusedStringReferences);
+            }
+            
+            //the remaining items are the items with no reference.
+            if (unusedStringReferences.Count > 0)
+            {
+                //update the referenceString.
+                foreach (StringReference unusedStringReference in unusedStringReferences)
+                {
+                    stringRefences.Remove(unusedStringReference);
+                    for (int k = unusedStringReference.Index; k < stringRefences.Count; k++)
+                        stringRefences[k].Index--;
+                }
+
+                foreach (IWorksheet worksheet in worksheets)
+                {
+                    //Update references.
+                    worksheet.UpdateStringReferences(stringRefences.Where(sr => sr.Index != sr.OldIndex).ToList());
+                }
+            }
+
+            //Update file.
+
         }
 
         public int GetStringReferenceOf(string value)

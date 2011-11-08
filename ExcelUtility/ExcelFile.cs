@@ -10,6 +10,7 @@ namespace ExcelUtility
 {
     public class ExcelFile : IDisposable
     {
+        private SharedStrings sharedString;
         private Workbook workbook;
         private string decompressPath;
         private string originalFilePath;
@@ -31,29 +32,41 @@ namespace ExcelUtility
         private void ReadContent(string filePath)
         {
             originalFilePath = filePath;
+
             //decompressPath = string.Format("{0}{1}/", Path.GetTempPath(), Path.GetFileNameWithoutExtension(filePath));
             decompressPath = string.Format(@"D:/temp/{0}/", Path.GetFileNameWithoutExtension(filePath));
             new FastZip().ExtractZip(filePath, decompressPath, null);
-            workbook = GetWorkbook(decompressPath, XDocument.Load(string.Format("{0}[Content_Types].xml", decompressPath)));
-            workbook.Worksheets = GetWorksheets(workbook);
+
+            XDocument contentTypes = XDocument.Load(string.Format("{0}[Content_Types].xml", decompressPath));
+            sharedString = BuildSharedString(decompressPath, contentTypes);
+            workbook = BuildWorkbook(decompressPath, contentTypes);
+            workbook.Worksheets = BuildWorksheets(workbook, sharedString);
         }
 
-        private Workbook GetWorkbook(string rootPath, XDocument contentTypes)
+        private SharedStrings BuildSharedString(string rootPath, XDocument contentTypes)
         {
-            return (from workbook in contentTypes.Descendants(contentTypes.Root.GetDefaultNamespace() + "Override")
-                    select new Workbook 
+            return (from content in contentTypes.Descendants(contentTypes.Root.GetDefaultNamespace() + "Override")
+                        where content.Attribute("PartName").Value.Contains("sharedStrings.xml")
+                        select new SharedStrings(XElement.Load(string.Format("{0}/{1}", rootPath, content.Attribute("PartName").Value)))).FirstOrDefault();
+        }
+
+        private Workbook BuildWorkbook(string rootPath, XDocument contentTypes)
+        {
+            return (from content in contentTypes.Descendants(contentTypes.Root.GetDefaultNamespace() + "Override")
+                    where content.Attribute("PartName").Value.Contains("workbook.xml")
+                    select new Workbook
                     {
-                        WorkbookPath = string.Format("{0}{1}", rootPath, workbook.Attribute("PartName").Value)
+                        WorkbookPath = string.Format("{0}{1}", rootPath, content.Attribute("PartName").Value)
                     }).FirstOrDefault();
         }
 
-        private IList<IWorksheet> GetWorksheets(Workbook workbook)
+        private IList<IWorksheet> BuildWorksheets(Workbook workbook, SharedStrings sharedStrings)
         {
             XDocument workbookData = XDocument.Load(workbook.WorkbookPath);
             return (from sheet in workbookData.Descendants(workbookData.Root.GetDefaultNamespace() + "sheet")
                     select (IWorksheet)new Worksheet(XElement.Load(string.Format("{0}/worksheets/sheet{1}.xml", Path.GetDirectoryName(workbook.WorkbookPath), sheet.Attribute("sheetId").Value)))
                     {
-                        SharedStrings = new SharedStrings(XElement.Load(string.Format("{0}/sharedStrings.xml", Path.GetDirectoryName(workbook.WorkbookPath)))),
+                        SharedStrings = sharedStrings,
                         Name = sheet.Attribute("name").Value,
                         SheetId = Convert.ToInt32(sheet.Attribute("sheetId").Value)
                     }).ToList();
@@ -68,6 +81,7 @@ namespace ExcelUtility
 
         private void SaveChanges()
         {
+            sharedString.CleanUpReferences(workbook.Worksheets);
             workbook.SaveChanges();
         }
 
