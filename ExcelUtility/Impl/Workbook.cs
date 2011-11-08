@@ -16,7 +16,7 @@ namespace ExcelUtility.Impl
         internal void SaveChanges()
         {
             foreach (IWorksheet worksheet in Worksheets)
-                worksheet.SaveChanges(string.Format("{0}/worksheets/", Path.GetDirectoryName(WorkbookPath)));
+                worksheet.SaveChanges(Path.GetDirectoryName(WorkbookPath));
         }
     }
 }

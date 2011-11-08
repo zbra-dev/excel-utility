@@ -5,13 +5,17 @@ namespace ExcelUtility
     public class Cell
     {
         private string value;
-        
-        public XElement XElementCell { get; set; }
+        private IWorksheet parentWorksheet;
+        private XElement cellData;
+        private XNamespace Namespace { get { return cellData.GetDefaultNamespace(); } }
+
         public string Value { get { return value; } set { SetValue(value); } }
         public string Name { get; private set; }
 
-        internal Cell(string name)
+        internal Cell(XElement cellData, IWorksheet parentWorksheet, string name)
         {
+            this.cellData = cellData;
+            this.parentWorksheet = parentWorksheet;
             Name = name;
         }
 
@@ -20,13 +24,15 @@ namespace ExcelUtility
             double numeric;
             if (!double.TryParse(value, out numeric))
             {
-                //look at sharedStrings.xml if this one exists and add reference, if not create at sharedStrings.xml and referenced it.
-                //XElementCell.SetElementValue(XName.Get("v", XElementCell.GetDefaultNamespace().ToString()), sharedStringIndex);
+                if (cellData.Attribute("t") == null || cellData.Attribute("t").Value != "s")
+                    cellData.SetAttributeValue("t", "s");
+                cellData.SetElementValue(Namespace + "v", parentWorksheet.SharedStrings.GetStringReferenceOf(value));
             }
             else
             {
-                //XElementCell.SetElementValue(XName.Get("v", XElementCell.GetDefaultNamespace().ToString()), value);
-                XElementCell.SetElementValue(XElementCell.GetDefaultNamespace() + "v", value);
+                if (cellData.Attribute("t") != null && cellData.Attribute("t").Value == "s")
+                    cellData.SetAttributeValue("t", string.Empty);
+                cellData.SetElementValue(cellData.GetDefaultNamespace() + "v", value);
             }
             this.value = value;
         }

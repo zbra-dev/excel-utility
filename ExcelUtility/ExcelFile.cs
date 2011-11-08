@@ -51,9 +51,9 @@ namespace ExcelUtility
         {
             XDocument workbookData = XDocument.Load(workbook.WorkbookPath);
             return (from sheet in workbookData.Descendants(workbookData.Root.GetDefaultNamespace() + "sheet")
-                    select (IWorksheet)new Worksheet()
+                    select (IWorksheet)new Worksheet(XElement.Load(string.Format("{0}/worksheets/sheet{1}.xml", Path.GetDirectoryName(workbook.WorkbookPath), sheet.Attribute("sheetId").Value)))
                     {
-                        Sheet = XElement.Load(string.Format("{0}/worksheets/sheet{1}.xml", Path.GetDirectoryName(workbook.WorkbookPath), sheet.Attribute("sheetId").Value)),
+                        SharedStrings = new SharedStrings(XElement.Load(string.Format("{0}/sharedStrings.xml", Path.GetDirectoryName(workbook.WorkbookPath)))),
                         Name = sheet.Attribute("name").Value,
                         SheetId = Convert.ToInt32(sheet.Attribute("sheetId").Value)
                     }).ToList();

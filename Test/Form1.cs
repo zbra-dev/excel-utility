@@ -27,12 +27,18 @@ namespace Test
                 IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
                 //Column column = sheet1.GetColumn("E");
                 //column.Width = 4.57;
-                Cell e1 = sheet1.GetCell("E1");
-                e1.Value = "1235435";
-                //Cell c1 = sheet1.GetCell("C1");
-                //c1.Value = "3443";
-                //Cell d1 = sheet1.GetCell("D1");
-                //c1.Value = "TextoExemplo";
+
+                //Numbers
+                Cell e1 = sheet1.GetCell("E1"); //Cell in use.
+                e1.Value = "40210";
+                Cell c1 = sheet1.GetCell("C1");
+                c1.Value = "3443";
+                
+                //Text
+                Cell b1 = sheet1.GetCell("B1");
+                b1.Value = "Atwood Falcon"; //Existing text - index = 7;
+                Cell d1 = sheet1.GetCell("D1");
+                d1.Value = "New Text"; //new Text
 
                 /*
                 Shape shape = sheet1.DrawShape(0, 0, 100, 100);

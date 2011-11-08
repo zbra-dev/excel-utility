@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using System.Text.RegularExpressions;
 using System.Collections;
 
@@ -9,10 +10,18 @@ namespace ExcelUtility.Impl
     internal class Worksheet : IWorksheet
     {
         #region IWorksheet Members
-        public XElement Sheet { get; set; }
+
+        private XElement sheet;
+        private XNamespace Namespace { get { return sheet.GetDefaultNamespace(); } }
+        public SharedStrings SharedStrings { get; set; }
         public string Name { get; set; }
         public int SheetId { get; set; }
-        
+
+        internal Worksheet(XElement sheet)
+        {
+            this.sheet = sheet;
+        }
+
         public Column GetColumn(string name)
         {
             /*
@@ -26,12 +35,9 @@ namespace ExcelUtility.Impl
 
         public Cell GetCell(string name)
         {
-            Cell cell = (from c in Sheet.Descendants(Sheet.GetDefaultNamespace() + "c")
+            Cell cell = (from c in sheet.Descendants(Namespace + "c")
                          where c.Attribute("r").Value == name
-                         select new Cell(name)
-                         {
-                             XElementCell = c
-                          }).FirstOrDefault();
+                         select new Cell(c, this, name)).FirstOrDefault();
             return cell == null ? CreateNewCell(name) : cell;
         }
 
@@ -47,19 +53,20 @@ namespace ExcelUtility.Impl
 
         public void SaveChanges(string xmlPath)
         {
-            Sheet.Save(string.Format("{0}/sheet{1}.xml", xmlPath, SheetId));
+            SharedStrings.Save(xmlPath);
+            sheet.Save(string.Format("{0}/worksheets/sheet{1}.xml", xmlPath, SheetId));
         }
 
         #endregion
 
         private Cell CreateNewCell(string name)
         {
-            XElement newCell = new XElement(Sheet.GetDefaultNamespace() + "c", new XElement(Sheet.GetDefaultNamespace() + "v"));
-            newCell.SetAttributeValue(Sheet.GetDefaultNamespace() + "r", name);
-            XElement row = Sheet.Descendants(Sheet.GetDefaultNamespace() + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
+            XElement newCell = new XElement(Namespace + "c", new XElement(Namespace + "v"));
+            newCell.SetAttributeValue("r", name);
+            XElement row = sheet.Descendants(Namespace + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
             //Check if row is null.
             row.Add(newCell);
-            return new Cell(name) { XElementCell = newCell };
+            return new Cell(newCell, this, name);
         }
     }
 }
