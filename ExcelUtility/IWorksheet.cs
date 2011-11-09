@@ -17,5 +17,6 @@ namespace ExcelUtility
         void SaveChanges(string xmlPath);
         void RemoveUnusedStringReferences(IList<StringReference> unusedStringRefences);
         void UpdateStringReferences(IList<StringReference> stringRefences);
+        int CountStringsUsed();
     }
 }

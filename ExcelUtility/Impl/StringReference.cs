@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Xml.Linq;
 
 namespace ExcelUtility.Impl
 {
     public class StringReference
     {
+        internal XElement Reference { get; set; }
         public int Index { get; set; }
         public int OldIndex { get; set; }
         public string Text { get; set; }

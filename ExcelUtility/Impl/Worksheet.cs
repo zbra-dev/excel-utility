@@ -66,7 +66,7 @@ namespace ExcelUtility.Impl
                                            select cell).ToList();
             foreach (XElement cell in cells)
                 if (unusedStringRefences.Any(c => c.Index == Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value)))
-                    unusedStringRefences.Remove(unusedStringRefences.First(c => c.Index == Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value)));       
+                    unusedStringRefences.Remove(unusedStringRefences.First(c => c.Index == Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value)));
         }
 
         public void UpdateStringReferences(IList<StringReference> stringRefences)
@@ -74,11 +74,18 @@ namespace ExcelUtility.Impl
             foreach (StringReference stringReference in stringRefences)
             {
                 IList<XElement> cells = (from cell in sheet.Descendants(Namespace + "c")
-                                             where cell.Attribute("t") != null && cell.Attribute("t").Value == "s" && Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value) == stringReference.OldIndex
-                                             select cell).ToList();
-                foreach(XElement cell in cells)
+                                         where cell.Attribute("t") != null && cell.Attribute("t").Value == "s" && Convert.ToInt32(cell.Descendants(Namespace + "v").First().Value) == stringReference.OldIndex
+                                         select cell).ToList();
+                foreach (XElement cell in cells)
                     cell.Descendants(Namespace + "v").First().Value = stringReference.Index.ToString();
             }
+        }
+
+        public int CountStringsUsed()
+        {
+            return (from cell in sheet.Descendants(Namespace + "c")
+                    where cell.Attribute("t") != null && cell.Attribute("t").Value == "s"
+                    select cell).ToList().Count;
         }
 
         #endregion

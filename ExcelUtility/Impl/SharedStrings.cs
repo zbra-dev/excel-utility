@@ -29,37 +29,40 @@ namespace ExcelUtility.Impl
             int index = 0;
             foreach (XElement element in sharedStringsData.Descendants(Namespace + "si"))
             {
-                unusedStringReferences.Add(new StringReference() { Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
-                stringRefences.Add(new StringReference() { Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
+                unusedStringReferences.Add(new StringReference() { Reference = element, Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
+                stringRefences.Add(new StringReference() { Reference = element, Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
                 index++;
             }
-                
+
+            //send this list to worksheet, the itens founded there are removed from it.    
+            int stringsUsed = 0;
             foreach (IWorksheet worksheet in worksheets)
             {
-                //send this list to worksheet, the itens founded there are removed from it.
                 worksheet.RemoveUnusedStringReferences(unusedStringReferences);
+                stringsUsed += worksheet.CountStringsUsed();
             }
-            
+
+            sharedStringsData.SetAttributeValue("count", stringsUsed);
+
             //the remaining items are the items with no reference.
             if (unusedStringReferences.Count > 0)
             {
                 //update the referenceString.
                 foreach (StringReference unusedStringReference in unusedStringReferences)
                 {
-                    stringRefences.Remove(unusedStringReference);
+                    stringRefences.Remove(stringRefences.First(sr => sr.Reference == unusedStringReference.Reference));
                     for (int k = unusedStringReference.Index; k < stringRefences.Count; k++)
                         stringRefences[k].Index--;
+                    unusedStringReference.Reference.Remove();
                 }
-
+                
+                //Update references.
                 foreach (IWorksheet worksheet in worksheets)
-                {
-                    //Update references.
                     worksheet.UpdateStringReferences(stringRefences.Where(sr => sr.Index != sr.OldIndex).ToList());
-                }
+
+                sharedStringsData.SetAttributeValue("uniqueCount", stringRefences.Count);
+                //sharedStringsData.SetAttributeValue("uniqueCount", Convert.ToInt32(sharedStringsData.Attribute("uniqueCount").Value) - unusedStringReferences.Count);
             }
-
-            //Update file.
-
         }
 
         public int GetStringReferenceOf(string value)
@@ -81,13 +84,14 @@ namespace ExcelUtility.Impl
 
         private int CreateNewStringReference(string value)
         {
-            XElement newString = new XElement(Namespace + "si", new XElement(Namespace + "t"), new XElement(Namespace+"s"));
+            XElement newString = new XElement(Namespace + "si", new XElement(Namespace + "t"));
             newString.SetElementValue(Namespace + "t", value);
-            newString.SetElementValue(Namespace + "s", 0);
+            
             sharedStringsData.Add(newString);
             //Update count value
+            sharedStringsData.SetAttributeValue("count", Convert.ToInt32(sharedStringsData.Attribute("count").Value) + 1);
             sharedStringsData.SetAttributeValue("uniqueCount", Convert.ToInt32(sharedStringsData.Attribute("uniqueCount").Value) + 1);
-            return Convert.ToInt32(sharedStringsData.Attribute("uniqueCount").Value);
+            return Convert.ToInt32(sharedStringsData.Attribute("uniqueCount").Value) - 1;//Index starts at ZERO!
         }
     }
 }
