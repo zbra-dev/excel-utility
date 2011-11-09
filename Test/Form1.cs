@@ -39,7 +39,7 @@ namespace Test
                 //b1.Value = "Atwood Falcon"; //Existing text - index = 7;
                 //Cell a3 = sheet1.GetCell("A3");
                 //a3.Value = "New Text for A3"; //new Text
-                Cell c1 = sheet1.GetCell("C1");//Unused Cell
+                Cell c1 = sheet1.GetCell("A1");//Unused Cell
                 c1.Value = "Atwood Falcon";
 
                 /*

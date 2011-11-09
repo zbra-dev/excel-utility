@@ -98,8 +98,18 @@ namespace ExcelUtility.Impl
             var row = sheet.Descendants(Namespace + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
 
             var cells = row.Descendants(Namespace + "c").ToArray();
+           
+            var cellComparison = new Comparison<XElement>((c1, c2) => 
+                {
+                    var v1 = c1.Attribute("r").Value;
+                    var v2 = c2.Attribute("r").Value;
+                    int compare = v1.Length.CompareTo(v2.Length);
+                    if (compare == 0)
+                        return v1.CompareTo(v2);
+                    return compare;
+                });
 
-            int index = cells.BinarySearch(newCell, (c1, c2) => c1.Attribute("r").Value.CompareTo(c2.Attribute("r").Value));
+            int index = cells.BinarySearch(newCell, cellComparison);
             if (index < 0)
             {
                 index = ~index;
@@ -108,7 +118,10 @@ namespace ExcelUtility.Impl
             {
                 throw new InvalidOperationException(string.Format("Cell {0} already exists", name));
             }
-            cells[index].AddBeforeSelf(newCell);
+            if (index >= cells.Length)
+                cells[cells.Length - 1].AddAfterSelf(newCell);
+            else
+                cells[index].AddBeforeSelf(newCell);
             return new Cell(newCell, this, name);
         }
     }
