@@ -5,6 +5,7 @@ using System.Xml.XPath;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
+using ExcelUtility.Utils;
 
 namespace ExcelUtility.Impl
 {
@@ -92,11 +93,22 @@ namespace ExcelUtility.Impl
 
         private Cell CreateNewCell(string name)
         {
-            XElement newCell = new XElement(Namespace + "c", new XElement(Namespace + "v"));
+            var newCell = new XElement(Namespace + "c", new XElement(Namespace + "v"));
             newCell.SetAttributeValue("r", name);
-            XElement row = sheet.Descendants(Namespace + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
-            //Check if row is null.
-            row.Add(newCell);
+            var row = sheet.Descendants(Namespace + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
+
+            var cells = row.Descendants(Namespace + "c").ToArray();
+
+            int index = cells.BinarySearch(newCell, (c1, c2) => c1.Attribute("r").Value.CompareTo(c2.Attribute("r").Value));
+            if (index < 0)
+            {
+                index = ~index;
+            }
+            else
+            {
+                throw new InvalidOperationException(string.Format("Cell {0} already exists", name));
+            }
+            cells[index].AddBeforeSelf(newCell);
             return new Cell(newCell, this, name);
         }
     }
