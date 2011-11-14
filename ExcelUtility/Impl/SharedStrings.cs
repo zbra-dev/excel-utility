@@ -9,7 +9,7 @@ namespace ExcelUtility.Impl
     {
         private XElement sharedStringsData;
         private XNamespace Namespace { get { return sharedStringsData.GetDefaultNamespace(); } }
-        
+
         public SharedStrings(XElement sharedStringsData)
         {
             this.sharedStringsData = sharedStringsData;

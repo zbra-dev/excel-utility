@@ -13,6 +13,7 @@ namespace ExcelUtility
         public int MarginRight { get; set; }
         public int MarginTop { get; set; }
         public int MarginBottom { get; set; }
+
         public string Text { get; set; }
     }
 }

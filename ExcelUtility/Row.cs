@@ -1,23 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ExcelUtility.Impl;
-
+﻿
+using System.Xml.Linq;
 namespace ExcelUtility
 {
     public class Row
     {
-        private Worksheet worksheet;
+        private IWorksheet worksheet;
+        private XElement rowData;
         private double height;
 
-        public string Name { get; private set; }
+        public int Index { get; private set; }
         public double Height { get { return height; } set { SetHeight(value); } }
+        public double Position { get { return worksheet.GetRowPosition(Index); } }
 
-        internal Row(Worksheet worksheet, string name)
+        internal Row(XElement rowData, IWorksheet worksheet, int index)
         {
+            this.rowData = rowData;
             this.worksheet = worksheet;
-            Name = name;
+            Index = index;
         }
 
         private void SetHeight(double value)

@@ -5,14 +5,20 @@ namespace ExcelUtility
 {
     public interface IWorksheet
     {
+        Drawing Drawing { get; set; }
         SharedStrings SharedStrings { get; set; }
         string Name { get; set; }
         int SheetId { get; set; }
         
         Column GetColumn(string name);
-        Row GetRow(string name);
+        Column CalculateColumnAfter(Column columnBase, double colOffSet, double width);
+        double GetColumnPosition(int columnIndex);
+
+        Row GetRow(int index);
+        Row CalculateRowAfter(Row row, double rowOffSet, double height);
+        double GetRowPosition(int rowIndex); 
+        
         Cell GetCell(string name);
-        Shape DrawShape(double x, double y, double width, double height);
         
         void SaveChanges(string xmlPath);
         void RemoveUnusedStringReferences(IList<StringReference> unusedStringRefences);
