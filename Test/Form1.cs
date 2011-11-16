@@ -54,5 +54,44 @@ namespace Test
                  * */
             }
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            int groups = 3;
+            int months = 12;
+            using (ExcelFile file = ExcelFile.Open(@"D:\temp\Sheet3.xlsx"))
+            {
+                var sheet = file.OpenWorksheet("AC1");
+                for (int i = 0; i < groups; ++i)
+                {
+                    var column = sheet.GetColumn(((char)'A' + i).ToString());
+                    column.Width = 100;
+                    var cell = sheet.GetCell(column.Name + "1");
+                    cell.Value = "Group " + i;
+                }
+                for (int i = 0; i < months; ++i)
+                {
+                    var column = sheet.GetColumn(((char)'A' + i + groups).ToString());
+                    column.Width = 50;
+                    //column.Color = i % 2 == 0 ? "Gray" : "White";
+                    var cell = sheet.GetCell(column.Name + "1");
+                    cell.Value = "Month " + i;
+                }
+                // Row 1
+                var row = sheet.GetRow(2);
+                row.Height = 100;
+                for (int i = 0; i < groups; ++i)
+                {
+                    var columnName = ((char)'A' + i).ToString();
+                    var cell = sheet.GetCell(columnName + row.Index);
+                    cell.Value = "Value " + i;
+                }
+                var start = sheet.GetColumn(((char)'A' + groups).ToString());
+                var shape1 = sheet.Drawing.DrawShape(start, row, 0, 0, 250, 50);
+                shape1.Text = "Shape1";
+                var shape2 = sheet.Drawing.DrawShape(start, row, 50, 25, 250, 50);
+                shape2.Text = "Shape2";
+            }
+        }
     }
 }
