@@ -36,7 +36,7 @@ namespace ExcelUtility
 
             //decompressPath = string.Format("{0}{1}/", Path.GetTempPath(), Path.GetFileNameWithoutExtension(filePath));
             decompressPath = string.Format(@"D:/temp/{0}/", Path.GetFileNameWithoutExtension(filePath));
-            //new FastZip().ExtractZip(filePath, decompressPath, null);
+            new FastZip().ExtractZip(filePath, decompressPath, null);
 
             XDocument contentTypes = XDocument.Load(string.Format("{0}[Content_Types].xml", decompressPath));
             workbook = BuildWorkbook(decompressPath, contentTypes);
@@ -72,12 +72,16 @@ namespace ExcelUtility
             {
                 var current = workbookRelationshipData.Descendants(workbookRelationshipData.Root.GetDefaultNamespace() + "Relationship").Where(r => r.Attribute("Id").Value == sheet.Attribute(sheet.GetNamespaceOfPrefix("r") + "id").Value).First();
                 var worksheetPath = string.Format("{0}/{1}", Path.GetDirectoryName(workbook.WorkbookPath), Path.GetDirectoryName(current.Attribute("Target").Value));
-                worksheets.Add(new Worksheet(XElement.Load(string.Format("{0}/{1}", Path.GetDirectoryName(workbook.WorkbookPath), current.Attribute("Target").Value)), XElement.Load(string.Format("{0}/_rels/sheet{1}.xml.rels", worksheetPath, sheet.Attribute("sheetId").Value)), worksheetPath)
+                //Decide what to do when no relationship found.
+                if (File.Exists(string.Format("{0}/_rels/sheet{1}.xml.rels", worksheetPath, sheet.Attribute("sheetId").Value)))
                 {
-                    SharedStrings = sharedString,
-                    Name = sheet.Attribute("name").Value,
-                    SheetId = Convert.ToInt32(sheet.Attribute("sheetId").Value)
-                });
+                    worksheets.Add(new Worksheet(XElement.Load(string.Format("{0}/{1}", Path.GetDirectoryName(workbook.WorkbookPath), current.Attribute("Target").Value)), XElement.Load(string.Format("{0}/_rels/sheet{1}.xml.rels", worksheetPath, sheet.Attribute("sheetId").Value)), worksheetPath)
+                    {
+                        SharedStrings = sharedString,
+                        Name = sheet.Attribute("name").Value,
+                        SheetId = Convert.ToInt32(sheet.Attribute("sheetId").Value)
+                    });
+                }
             }
             return worksheets;
         }

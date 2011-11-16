@@ -9,9 +9,13 @@ namespace ExcelUtility
         SharedStrings SharedStrings { get; set; }
         string Name { get; set; }
         int SheetId { get; set; }
+        double DefaultRowHeight { get; }
+        double DefaultColumnWidth { get; }
         
         Column GetColumn(string name);
         Column CalculateColumnAfter(Column columnBase, double colOffSet, double width);
+        Column CreateColumnBetween(int min, int max);
+        Column CreateColumnBetweenWith(int p, int max, double currentWidth);
         double GetColumnPosition(int columnIndex);
 
         Row GetRow(int index);

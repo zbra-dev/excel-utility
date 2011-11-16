@@ -22,16 +22,17 @@ namespace Test
 
         private void button1_Click(object sender, EventArgs e)
         {
-            using (ExcelFile file = ExcelFile.Open(@"D:\temp\Sheet3.xlsx"))
+            using (ExcelFile file = ExcelFile.Open(@"D:\temp\book1.xlsx"))
             {
-                IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
-                Column column = sheet1.GetColumn("E");
+                //IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
+                IWorksheet sheet1 = file.OpenWorksheet("Sheet2");
+                Column column = sheet1.GetColumn("F");
                 double realPosition = sheet1.GetColumnPosition(column.ColumnIndex);
-                Row row = sheet1.GetRow(2);
+                Row row = sheet1.GetRow(12);
                 double rowRealPosition = sheet1.GetRowPosition(row.Index);
 
-                //column.Width = 4.57;
-
+                column.Width = 4.57;
+                /*
                 //Numbers
                 Cell h1 = sheet1.GetCell("H1"); //Cell in use.
                 h1.Value = "40210";

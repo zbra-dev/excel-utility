@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
 using ExcelUtility.Utils;
+using System.Globalization;
 
 namespace ExcelUtility.Impl
 {
@@ -17,7 +18,7 @@ namespace ExcelUtility.Impl
         private XNamespace SheetNamespace { get { return sheetData.GetDefaultNamespace(); } }
         private XNamespace SheetNamespaceWithPrefixR { get { return sheetData.GetNamespaceOfPrefix("r"); } }
         private XNamespace RelationshipNamespace { get { return relationshipsData.GetDefaultNamespace(); } }
-        
+
         internal Worksheet(XElement sheet, XElement sheetRelationships, string path)
         {
             sheetData = sheet;
@@ -31,17 +32,19 @@ namespace ExcelUtility.Impl
         public SharedStrings SharedStrings { get; set; }
         public string Name { get; set; }
         public int SheetId { get; set; }
-        public double DefaultRowHeight { get { return Convert.ToDouble(sheetData.Descendants(SheetNamespace + "sheetFormatPr").First().Attribute("defaultRowHeight").Value); } }
+        public double DefaultRowHeight { get { return Convert.ToDouble(sheetData.Descendants(SheetNamespace + "sheetFormatPr").First().Attribute("defaultRowHeight").Value, CultureInfo.InvariantCulture); } }
+        public double DefaultColumnWidth { get { return 5; } }
 
+        #region ColumnArea
         public Column GetColumn(string name)
         {
             var col = (from c in sheetData.Descendants(SheetNamespace + "col")
-                       where Convert.ToInt32(c.Attribute("min").Value) >= GetColumnIndex(name) && Convert.ToInt32(c.Attribute("max").Value) <= GetColumnIndex(name)
+                       where GetColumnIndex(name) >= Convert.ToInt32(c.Attribute("min").Value) && GetColumnIndex(name) <= Convert.ToInt32(c.Attribute("max").Value)
                        select new Column(c, this, name)
                        {
-                           Width = Convert.ToDouble(c.Attribute("width").Value)
+                           Width = Convert.ToDouble(c.Attribute("width").Value, CultureInfo.InvariantCulture)
                        }).FirstOrDefault();
-            return col == null ? CreateNewColumn(name) : col;
+            return col == null ? CreateColumnBetween(GetColumnIndex(name), GetColumnIndex(name)) : col;
         }
 
         public Column CalculateColumnAfter(Column columnBase, double colOffSet, double width)
@@ -57,42 +60,51 @@ namespace ExcelUtility.Impl
                     dif -= Convert.ToDouble(cols[colCount].Attribute("width").Value);
                 colCount++;
             }
-            return colCount > cols.Count ? CreateNewColumn(GetColumnNameBy(colCount)) : new Column(cols[colCount], this, GetColumnNameBy(colCount)) { Width = Convert.ToDouble(cols[colCount].Attribute("widht").Value) };
+            return colCount > cols.Count ? CreateColumnBetween(colCount, colCount) : new Column(cols[colCount], this, GetColumnNameBy(colCount)) { Width = Convert.ToDouble(cols[colCount].Attribute("widht").Value, CultureInfo.InvariantCulture) };
+        }
+
+        public Column CreateColumnBetween(int min, int max)
+        {
+            return new Column(CreateColumnData(min, max, DefaultColumnWidth), this, min == max ? GetColumnNameBy(min) : "ColumnRange");
+        }
+
+        public Column CreateColumnBetweenWith(int min, int max, double width)
+        {
+            return new Column(CreateColumnData(min, max, width), this, min == max ? GetColumnNameBy(min) : "ColumnRange");
         }
 
         public double GetColumnPosition(int columnIndex)
         {
             double colPosition = 0;
-            /*var cols = (from col in sheetData.Descendants(SheetNamespace + "col")
-                        where (Convert.ToInt32(col.Attribute("max").Value) <= columnIndex || (Convert.ToInt32(col.Attribute("min").Value) < columnIndex && Convert.ToInt32(col.Attribute("max").Value) > columnIndex))
-                        select new Column(col, this, "") { Width = Convert.ToDouble(col.Attribute("width").Value) }).ToList();
-             */
             var cols = new List<XElement>();
-
+            var colsWidhtValue = new List<Double>();
             //All data
             var colsData = (from col in sheetData.Descendants(SheetNamespace + "col")
                             where (Convert.ToInt32(col.Attribute("max").Value) <= columnIndex || (Convert.ToInt32(col.Attribute("min").Value) < columnIndex && Convert.ToInt32(col.Attribute("max").Value) > columnIndex))
                             select col).ToList();
 
+            //Just XElement that doesn't represent a range
+            colsWidhtValue.AddRange((from col in colsData
+                                     where col.Attribute("min").Value == col.Attribute("max").Value
+                                     select Convert.ToDouble(col.Attribute("width").Value, CultureInfo.InvariantCulture)).ToList());
+
             //Just Xelements that represent a range
             var rangeCols = colsData.Where(t => t.Attribute("min").Value != t.Attribute("max").Value);
             foreach (var col in rangeCols)
             {
-                int range = Convert.ToInt32(col.Attribute("max").Value) - Convert.ToInt32(col.Attribute("min").Value);
+                int range = (Convert.ToInt32(col.Attribute("max").Value) > columnIndex ? columnIndex : Convert.ToInt32(col.Attribute("max").Value)) - Convert.ToInt32(col.Attribute("min").Value) + 1;
                 for (int k = 0; k < range; k++)
-                {
-
-                }
+                    colsWidhtValue.Add(Convert.ToDouble(col.Attribute("width").Value, CultureInfo.InvariantCulture));
             }
 
-            //Just XElement that doesn't represent a range
-            cols.AddRange(colsData.Where(t => t.Attribute("min").Value == t.Attribute("max").Value));
+            //Calculate Width for non listed columns
+            colPosition += DefaultColumnWidth * (columnIndex - 1 - colsWidhtValue.Count);
 
-            //foreach (var col in cols)
-            //    if(col.ColumnIndex <= columnIndex)
-            //        colPosition += col.Width;
+            foreach (var width in colsWidhtValue)
+                colPosition += width;
             return colPosition;
         }
+        #endregion
 
         public Row GetRow(int index)
         {
@@ -100,7 +112,7 @@ namespace ExcelUtility.Impl
                        where Convert.ToInt32(r.Attribute("r").Value) == index
                        select new Row(r, this, index)
                        {
-                           Height = r.Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(r.Attribute("ht").Value)
+                           Height = r.Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(r.Attribute("ht").Value, CultureInfo.InvariantCulture)
                        }).FirstOrDefault();
             return row == null ? CreateNewRow(index) : row;
         }
@@ -110,22 +122,25 @@ namespace ExcelUtility.Impl
             double dif = rowOffSet;
             int rowCount = 0;
             var rows = sheetData.Descendants(SheetNamespace + "row").Where(r => Convert.ToInt32(r.Attribute("r").Value) > row.Index).ToList();
-            while (dif > 0){
+            while (dif > 0)
+            {
                 if (rowCount > rows.Count)
                     dif -= DefaultRowHeight;
                 else
-                    dif -= rows[rowCount].Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(rows[rowCount].Attribute("ht").Value);
+                    dif -= rows[rowCount].Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(rows[rowCount].Attribute("ht").Value, CultureInfo.InvariantCulture);
                 rowCount++;
             }
-            return rowCount > rows.Count ? CreateNewRow(rowCount) : new Row(rows[rowCount], this, rowCount) { Height = rows[rowCount].Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(rows[rowCount].Attribute("ht").Value) };
+            return rowCount > rows.Count ? CreateNewRow(rowCount) : new Row(rows[rowCount], this, rowCount) { Height = rows[rowCount].Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(rows[rowCount].Attribute("ht").Value, CultureInfo.InvariantCulture) };
         }
 
         public double GetRowPosition(int rowIndex)
         {
             double rowPosition = 0;
             var rowsHeight = (from row in sheetData.Descendants(SheetNamespace + "row")
-                                        where Convert.ToInt32(row.Attribute("r").Value) < rowIndex
-                                        select row.Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(row.Attribute("ht").Value)).ToList();
+                              where Convert.ToInt32(row.Attribute("r").Value) < rowIndex
+                              select row.Attribute("ht") == null ? DefaultRowHeight : Convert.ToDouble(row.Attribute("ht").Value, CultureInfo.InvariantCulture)).ToList();
+            //Sum a DefaultRowHeight measure for each non listed item.
+            rowPosition += DefaultRowHeight * (rowIndex - 1 - rowsHeight.Count);
             foreach (var rowHeight in rowsHeight)
                 rowPosition += rowHeight;
             return rowPosition;
@@ -181,7 +196,7 @@ namespace ExcelUtility.Impl
         }
 
         #endregion
-        
+
         private void LoadDrawing()
         {
             var drawing = sheetData.Descendants(SheetNamespace + "drawing").FirstOrDefault();
@@ -193,7 +208,7 @@ namespace ExcelUtility.Impl
                 Drawing = new Drawing(XElement.Load(string.Format("{0}/{1}", worksheetPath, drawRelationship.Attribute("Target").Value)), this);
             }
         }
-        
+
         private Cell CreateNewCell(string name)
         {
             var newCell = new XElement(SheetNamespace + "c", new XElement(SheetNamespace + "v"));
@@ -201,7 +216,7 @@ namespace ExcelUtility.Impl
 
             var row = sheetData.Descendants(SheetNamespace + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
             var cells = row.Descendants(SheetNamespace + "c").ToArray();
-            var cellComparison = new Comparison<XElement>((c1, c2) => 
+            var cellComparison = new Comparison<XElement>((c1, c2) =>
                 {
                     var v1 = c1.Attribute("r").Value;
                     var v2 = c2.Attribute("r").Value;
@@ -245,11 +260,6 @@ namespace ExcelUtility.Impl
             return new Row(newRow, this, rowCount) { Height = DefaultRowHeight };
         }
 
-        private Column CreateNewColumn(string name)
-        {
-            return null;
-        }
-
         private string GetColumnNameBy(int colCount)
         {
             return null;
@@ -259,8 +269,35 @@ namespace ExcelUtility.Impl
         {
             int index = 0;
             foreach (char c in columnReference)
-                index = index + c - 65;
+                index = index + c - 64;
             return index + (26 * (columnReference.Length - 1));
+        }
+
+        private XElement CreateColumnData(int min, int max, double width)
+        {
+            XElement newColumn = new XElement(SheetNamespace + "col");
+            newColumn.SetAttributeValue("min", min);
+            newColumn.SetAttributeValue("max", max);
+            newColumn.SetAttributeValue("width", width);
+            newColumn.SetAttributeValue("customWidth", true);
+
+            var cols = sheetData.Descendants(SheetNamespace + "row").ToArray();
+            var rowComparison = new Comparison<XElement>((r1, r2) =>
+            {
+                var v1 = r1.Attribute("max").Value;
+                var v2 = r2.Attribute("min").Value;
+                int compare = v1.Length.CompareTo(v2.Length);
+                if (compare == 0)
+                    return v1.CompareTo(v2);
+                return compare;
+            });
+            int index = cols.BinarySearch(newColumn, rowComparison);
+            index = ~index;
+            if (index >= cols.Length)
+                cols[cols.Length - 1].AddAfterSelf(newColumn);
+            else
+                cols[index].AddBeforeSelf(newColumn);
+            return newColumn;
         }
     }
 }
