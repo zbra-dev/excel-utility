@@ -22,16 +22,20 @@ namespace Test
 
         private void button1_Click(object sender, EventArgs e)
         {
-            using (ExcelFile file = ExcelFile.Open(@"D:\temp\book1.xlsx"))
+            using (ExcelFile file = ExcelFile.Open(@"D:\temp\sheet3.xlsx"))
             {
-                //IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
-                IWorksheet sheet1 = file.OpenWorksheet("Sheet2");
-                Column column = sheet1.GetColumn("F");
-                double realPosition = sheet1.GetColumnPosition(column.ColumnIndex);
-                Row row = sheet1.GetRow(12);
-                double rowRealPosition = sheet1.GetRowPosition(row.Index);
+                IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
+                //IWorksheet sheet1 = file.OpenWorksheet("Sheet2");
 
-                column.Width = 4.57;
+                //Column a = sheet1.CreateColumnBetween(8, 8);
+
+
+                //Column column = sheet1.GetColumn("F");
+                //double realPosition = sheet1.GetColumnPosition(column.ColumnIndex);
+                //Row row = sheet1.GetRow(12);
+                //double rowRealPosition = sheet1.GetRowPosition(row.Index);
+
+                //column.Width = 4.57;
                 /*
                 //Numbers
                 Cell h1 = sheet1.GetCell("H1"); //Cell in use.
@@ -44,15 +48,16 @@ namespace Test
                 b1.Value = "Atwood Falcon"; //Existing text - index = 7;
                 Cell a3 = sheet1.GetCell("A3");
                 a3.Value = "New Text for A3"; //new Text
-                
-                /*Shape shape = sheet1.DrawShape(0, 0, 100, 100);
+                */
+
+                var shape = sheet1.Drawing.DrawShape(sheet1.GetColumn("A"), sheet1.GetRow(3), 0, 0, 250, 50);
+                shape.Text = "Shape1";
                 shape.ForeColor = Color.Black;
                 shape.MarginLeft = 10;
                 shape.MarginRight = 10;
                 shape.MarginTop = 10;
                 shape.MarginBottom = 10;
                 shape.Text = "12345";
-                 * */
             }
         }
 

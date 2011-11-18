@@ -51,7 +51,22 @@ namespace ExcelUtility.Impl
         {
             double dif = colOffSet;
             int colCount = 0;
-            var cols = sheetData.Descendants(SheetNamespace + "col").Where(r => Convert.ToInt32(r.Attribute("r").Value) > columnBase.ColumnIndex).ToList();
+            var colsWidhtValue = new List<double>();
+
+            var cols = sheetData.Descendants(SheetNamespace + "col").Where(col => columnBase.ColumnIndex < Convert.ToInt32(col.Attribute("max").Value)).ToList();
+
+            colsWidhtValue.AddRange((from col in cols
+                                     where col.Attribute("min").Value == col.Attribute("max").Value
+                                     select Convert.ToDouble(col.Attribute("width").Value, CultureInfo.InvariantCulture)).ToList());
+
+            var rangeCols = cols.Where(t => t.Attribute("min").Value != t.Attribute("max").Value);
+            foreach (var col in rangeCols)
+            {
+                int range = Convert.ToInt32(col.Attribute("max").Value) - ((columnBase.ColumnIndex > Convert.ToInt32(col.Attribute("min").Value)) ? columnBase.ColumnIndex : Convert.ToInt32(col.Attribute("min").Value) + 1);
+                for (int k = 0; k < range; k++)
+                    colsWidhtValue.Add(Convert.ToDouble(col.Attribute("width").Value, CultureInfo.InvariantCulture));
+            }
+
             while (dif > 0)
             {
                 if (colCount > cols.Count)
@@ -163,6 +178,7 @@ namespace ExcelUtility.Impl
         public void SaveChanges(string xmlPath)
         {
             SharedStrings.Save(xmlPath);
+            Drawing.Save();
             sheetData.Save(string.Format("{0}/worksheets/sheet{1}.xml", xmlPath, SheetId));
         }
 
@@ -205,7 +221,7 @@ namespace ExcelUtility.Impl
                 string drawingId = drawing.Attribute(SheetNamespaceWithPrefixR + "id").Value;
                 //Load 
                 var drawRelationship = relationshipsData.Descendants(RelationshipNamespace + "Relationship").Where(r => r.Attribute("Id").Value == drawingId).First();
-                Drawing = new Drawing(XElement.Load(string.Format("{0}/{1}", worksheetPath, drawRelationship.Attribute("Target").Value)), this);
+                Drawing = new Drawing(string.Format("{0}/{1}", worksheetPath, drawRelationship.Attribute("Target").Value), this);
             }
         }
 
@@ -279,24 +295,26 @@ namespace ExcelUtility.Impl
             newColumn.SetAttributeValue("min", min);
             newColumn.SetAttributeValue("max", max);
             newColumn.SetAttributeValue("width", width);
-            newColumn.SetAttributeValue("customWidth", true);
+            newColumn.SetAttributeValue("customWidth", 1);
 
-            var cols = sheetData.Descendants(SheetNamespace + "row").ToArray();
-            var rowComparison = new Comparison<XElement>((r1, r2) =>
+            var cols = sheetData.Descendants(SheetNamespace + "col").ToArray();
+            
+            /*var colComparison = new Comparison<XElement>((r1, r2) => 
             {
-                var v1 = r1.Attribute("max").Value;
-                var v2 = r2.Attribute("min").Value;
-                int compare = v1.Length.CompareTo(v2.Length);
-                if (compare == 0)
-                    return v1.CompareTo(v2);
-                return compare;
+                var v1 = r1.Attribute("min").Value;
+                var v2 = r2.Attribute("max").Value;
+                return v2.CompareTo(v2);
             });
-            int index = cols.BinarySearch(newColumn, rowComparison);
+            int index = cols.BinarySearch(newColumn, colComparison);
             index = ~index;
             if (index >= cols.Length)
                 cols[cols.Length - 1].AddAfterSelf(newColumn);
             else
                 cols[index].AddBeforeSelf(newColumn);
+            */
+            //TODO: fixed the insert position
+            sheetData.Descendants(SheetNamespace + "cols").First().Add(newColumn);
+
             return newColumn;
         }
     }
