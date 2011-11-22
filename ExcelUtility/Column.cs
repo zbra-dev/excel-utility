@@ -30,7 +30,7 @@ namespace ExcelUtility
         {
             int index = 0;
             foreach (char c in columnReference)
-                index = index + c - 64;
+                index = index + c - 65;
             return index + (26 * (columnReference.Length - 1));
         }
 

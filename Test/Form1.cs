@@ -50,7 +50,7 @@ namespace Test
                 a3.Value = "New Text for A3"; //new Text
                 */
 
-                var shape = sheet1.Drawing.DrawShape(sheet1.GetColumn("A"), sheet1.GetRow(3), 0, 0, 250, 50);
+                var shape = sheet1.Drawing.DrawShape(sheet1.GetColumn("D"), sheet1.GetRow(4), 0, 0, 40, 80);
                 shape.Text = "Shape1";
                 shape.ForeColor = Color.Black;
                 shape.MarginLeft = 10;
