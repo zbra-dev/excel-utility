@@ -33,9 +33,10 @@ namespace ExcelUtility.Impl
         public string Name { get; set; }
         public int SheetId { get; set; }
         public double DefaultRowHeight { get { return Convert.ToDouble(sheetData.Descendants(SheetNamespace + "sheetFormatPr").First().Attribute("defaultRowHeight").Value, CultureInfo.InvariantCulture); } }
-        public double DefaultColumnWidth { get { return 5; } }
+        public double DefaultColumnWidth { get { return 9; } }
 
         #region ColumnArea
+
         public Column GetColumn(string name)
         {
             var col = (from c in sheetData.Descendants(SheetNamespace + "col")
@@ -44,7 +45,7 @@ namespace ExcelUtility.Impl
                        {
                            Width = Convert.ToDouble(c.Attribute("width").Value, CultureInfo.InvariantCulture)
                        }).FirstOrDefault();
-            return col == null ? CreateColumnBetween(GetColumnIndex(name), GetColumnIndex(name)) : col;
+            return col == null ? CreateColumnBetween(GetColumnIndex(name) + 1, GetColumnIndex(name) + 1) : col;
         }
 
         public Column CalculateColumnAfter(Column columnBase, double colOffSet, double width)
@@ -71,7 +72,7 @@ namespace ExcelUtility.Impl
             while (dif > 0)
             {
                 if (colCount > separatedCols.Count)
-                    dif -= DefaultRowHeight;
+                    dif -= DefaultColumnWidth;
                 else
                     dif -= Convert.ToDouble(separatedCols[colCount].Attribute("width").Value, CultureInfo.InvariantCulture);// colsWidhtValue[colCount];
                 colCount++;
@@ -234,22 +235,29 @@ namespace ExcelUtility.Impl
 
             var row = sheetData.Descendants(SheetNamespace + "row").Where(r => r.Attribute("r").Value == Regex.Match(name, @"\d+").Value).FirstOrDefault();
             var cells = row.Descendants(SheetNamespace + "c").ToArray();
-            var cellComparison = new Comparison<XElement>((c1, c2) =>
-                {
-                    var v1 = c1.Attribute("r").Value;
-                    var v2 = c2.Attribute("r").Value;
-                    int compare = v1.Length.CompareTo(v2.Length);
-                    if (compare == 0)
-                        return v1.CompareTo(v2);
-                    return compare;
-                });
-
-            int index = cells.BinarySearch(newCell, cellComparison);
-            index = ~index;
-            if (index >= cells.Length)
-                cells[cells.Length - 1].AddAfterSelf(newCell);
+            if (cells.Length == 0)
+            {
+                row.Add(newCell);
+            }
             else
-                cells[index].AddBeforeSelf(newCell);
+            {
+                var cellComparison = new Comparison<XElement>((c1, c2) =>
+                    {
+                        var v1 = c1.Attribute("r").Value;
+                        var v2 = c2.Attribute("r").Value;
+                        int compare = v1.Length.CompareTo(v2.Length);
+                        if (compare == 0)
+                            return v1.CompareTo(v2);
+                        return compare;
+                    });
+
+                int index = cells.BinarySearch(newCell, cellComparison);
+                index = ~index;
+                if (index >= cells.Length)
+                    cells[cells.Length - 1].AddAfterSelf(newCell);
+                else
+                    cells[index].AddBeforeSelf(newCell);
+            }
             return new Cell(newCell, this, name);
         }
 
@@ -259,22 +267,28 @@ namespace ExcelUtility.Impl
             newRow.SetAttributeValue("r", rowCount);
 
             var rows = sheetData.Descendants(SheetNamespace + "row").ToArray();
-            var rowComparison = new Comparison<XElement>((r1, r2) =>
+            if (rows.Length == 0)
             {
-                var v1 = r1.Attribute("r").Value;
-                var v2 = r2.Attribute("r").Value;
-                int compare = v1.Length.CompareTo(v2.Length);
-                if (compare == 0)
-                    return v1.CompareTo(v2);
-                return compare;
-            });
-            int index = rows.BinarySearch(newRow, rowComparison);
-            index = ~index;
-            if (index >= rows.Length)
-                rows[rows.Length - 1].AddAfterSelf(newRow);
+                sheetData.Add(newRow);
+            }
             else
-                rows[index].AddBeforeSelf(newRow);
-
+            {
+                var rowComparison = new Comparison<XElement>((r1, r2) =>
+                {
+                    var v1 = r1.Attribute("r").Value;
+                    var v2 = r2.Attribute("r").Value;
+                    int compare = v1.Length.CompareTo(v2.Length);
+                    if (compare == 0)
+                        return v1.CompareTo(v2);
+                    return compare;
+                });
+                int index = rows.BinarySearch(newRow, rowComparison);
+                index = ~index;
+                if (index >= rows.Length)
+                    rows[rows.Length - 1].AddAfterSelf(newRow);
+                else
+                    rows[index].AddBeforeSelf(newRow);
+            }
             return new Row(newRow, this, rowCount) { Height = DefaultRowHeight };
         }
 
@@ -301,23 +315,33 @@ namespace ExcelUtility.Impl
             newColumn.SetAttributeValue("width", width);
             newColumn.SetAttributeValue("customWidth", 1);
 
-            var cols = sheetData.Descendants(SheetNamespace + "col").ToArray();
-            
-            /*var colComparison = new Comparison<XElement>((r1, r2) => 
+            var columns = sheetData.Descendants(SheetNamespace + "cols").FirstOrDefault();
+            if (columns == null)
             {
-                var v1 = r1.Attribute("min").Value;
-                var v2 = r2.Attribute("max").Value;
-                return v2.CompareTo(v2);
-            });
-            int index = cols.BinarySearch(newColumn, colComparison);
-            index = ~index;
-            if (index >= cols.Length)
-                cols[cols.Length - 1].AddAfterSelf(newColumn);
+                columns = new XElement(SheetNamespace + "cols");
+                sheetData.Descendants(SheetNamespace + "sheetFormatPr").First().AddAfterSelf(columns);
+            }
+            var cols = sheetData.Descendants(SheetNamespace + "col").ToArray();
+
+            if (cols.Length == 0)
+            {
+                columns.Add(newColumn);
+            }
             else
-                cols[index].AddBeforeSelf(newColumn);
-            */
-            //TODO: fixed the insert position
-            sheetData.Descendants(SheetNamespace + "cols").First().Add(newColumn);
+            {
+                var colComparison = new Comparison<XElement>((r1, r2) =>
+                {
+                    var v1 = r1.Attribute("min").Value;
+                    var v2 = r2.Attribute("max").Value;
+                    return v2.CompareTo(v2);
+                });
+                int index = cols.BinarySearch(newColumn, colComparison);
+                index = ~index;
+                if (index >= cols.Length)
+                    cols[cols.Length - 1].AddAfterSelf(newColumn);
+                else
+                    cols[index].AddBeforeSelf(newColumn);
+            }            
 
             return newColumn;
         }

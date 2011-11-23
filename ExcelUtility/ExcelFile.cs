@@ -46,6 +46,7 @@ namespace ExcelUtility
 
         private SharedStrings BuildSharedString(string rootPath, XDocument contentTypes)
         {
+            // TODO: must create an empty SharedStrings class that only gets saved if it receives some data
             return (from content in contentTypes.Descendants(contentTypes.Root.GetDefaultNamespace() + "Override")
                     where content.Attribute("PartName").Value.Contains("sharedStrings.xml")
                     select new SharedStrings(XElement.Load(string.Format("{0}/{1}", rootPath, content.Attribute("PartName").Value)))).FirstOrDefault();
@@ -101,7 +102,7 @@ namespace ExcelUtility
 
         public IWorksheet OpenWorksheet(string name)
         {
-            return workbook.Worksheets.FirstOrDefault<IWorksheet>(w => w.Name == name);
+            return workbook.Worksheets.FirstOrDefault(w => w.Name == name);
         }
 
         #region IDisposable Members
