@@ -52,8 +52,7 @@ namespace ExcelUtility.Impl
         {
             double dif = width;
             int colCount = 0;
-            var colsWidhtValue = new List<double>();
-
+            
             var cols = sheetData.Descendants(SheetNamespace + "col").Where(col => columnBase.ColumnIndex + 1 <= Convert.ToInt32(col.Attribute("max").Value)).ToList();
 
             var separatedCols = ((from col in cols
