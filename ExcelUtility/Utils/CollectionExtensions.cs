@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Commons.Collections;
 
 namespace ExcelUtility.Utils
 {
@@ -83,6 +84,19 @@ namespace ExcelUtility.Utils
         public static int BinarySearch<T>(this T[] array, T value, Comparison<T> comparison)
         {
             return Array.BinarySearch<T>(array, value, new DelegateComparer<T>(comparison));
+        }
+
+        public static int BinarySearch<T>(this List<T> list, T value, Comparison<T> comparison)
+        {
+            return list.BinarySearch(value, new DelegateComparer<T>(comparison));
+        }
+
+        public static IMultiMap<K, V> ToMultiMap<K, V>(this IEnumerable<V> col, Func<V, K> keySelector)
+        {
+            MultiMap<K, V> map = new MultiMap<K, V>();
+            foreach (V v in col)
+                map.Add(keySelector(v), v);
+            return map;
         }
     }
 }

@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.IO;
 using ExcelUtility;
-using System.Xml;
-using System.Text.RegularExpressions;
 
 namespace Test
 {
@@ -22,85 +13,11 @@ namespace Test
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int count = 0;
-            /*
-             * 1. Test un existing sheet name.
-             * NOTE: Data not changed.
-             */ 
-            using(ExcelFile file = ExcelFile.Open(@"D:\temp\1.DefaultWorksheet.xlsx"))
+            using (ExcelFile file = ExcelFile.Open(@"D:\Book1.xlsx"))
             {
-                try{
-                    count++;
-                    IWorksheet sheet1 = file.OpenWorksheet("non existing sheet name");
-                    Console.WriteLine("Test " + count + " with error: Error getting unexisting sheet");
-                } catch(Exception ex){
-                    Console.WriteLine("Error message while open a non existing sheet by name: " + ex.Message);
-                }
-            }
-
-            /*
-             * 2. Getting a column with lower case .
-             * NOTE: Data not changed.
-             */ 
-            using(ExcelFile file = ExcelFile.Open(@"D:\temp\1.DefaultWorksheet.xlsx"))
-            {
-                try{
-                    count++;
-                    IWorksheet sheet1 = file.OpenWorksheet("Sheet1");
-                    Column column = sheet1.GetColumn("a4");
-                    Console.WriteLine("Test " + count + " with no error: Sucess getting column with lower case");
-                } catch(Exception ex){
-                    Console.WriteLine("Error message while try to get column with lower case: " + ex.Message);
-                }
-            }
-
-             /*
-             * 3. Get a non existing column.
-             */ 
-            using(ExcelFile file = ExcelFile.Open(@"D:\temp\1.DefaultWorksheet.xlsx"))
-            {
-                try{
-                    count++;
-                    IWorksheet sheet1 = file.OpenWorksheet("Sheet1");
-                    Column column = sheet1.GetColumn("A4");
-                    Console.WriteLine("Test " + count + "no error: Sucess getting non existing column");
-                } catch(Exception ex){
-                    Console.WriteLine("Error message while try to get a non existing column(create first column): " + ex.Message);
-                }
-            }
-
-            /*
-             * 4. Get a non existing column.
-             */ 
-            using(ExcelFile file = ExcelFile.Open(@"D:\temp\1.DefaultWorksheet.xlsx"))
-            {
-                try{
-                    count++;
-                    IWorksheet sheet1 = file.OpenWorksheet("Sheet1");
-                    Column column = sheet1.GetColumn("A4");
-                    Console.WriteLine("Test " + count + "no error: Sucess getting non existing column");
-                } catch(Exception ex){
-                    Console.WriteLine("Error message while try to get a non existing column(create first column): " + ex.Message);
-                }
-            }
-
-
-
-
-            /*
-             * Test un existing sheet name.
-             */ 
-            using(ExcelFile file = ExcelFile.Open(@"D:\temp\DefaultWorksheet.xlsx"))
-            {
-                IWorksheet sheet1 = file.OpenWorksheet("non existing sheet name");
-                sheet1.GetCell("A1");
-            }
-
-
-            using (ExcelFile file = ExcelFile.Open(@"D:\temp\sheet3.xlsx"))
-            {
-                IWorksheet sheet1 = file.OpenWorksheet("Paosdpoasdp");
-
+                IWorksheet sheet2 = file.OpenWorksheet("asasda");
+                IWorksheet sheet1 = file.OpenWorksheet("Sheet1");
+                var cell = sheet1.GetCell("A4");
 
 
                 //IWorksheet sheet1 = file.OpenWorksheet("Sheet2");
@@ -128,14 +45,14 @@ namespace Test
                 a3.Value = "New Text for A3"; //new Text
                 */
 
-                var shape = sheet1.Drawing.DrawShape(sheet1.GetColumn("D"), sheet1.GetRow(4), 0, 0, 40, 80);
+                /*var shape = sheet1.Drawings.DrawShape(sheet1.GetColumn("D"), sheet1.GetRow(4), 0, 0, 40, 80);
                 shape.Text = "Shape1";
                 shape.ForeColor = Color.Black;
                 shape.MarginLeft = 10;
                 shape.MarginRight = 10;
                 shape.MarginTop = 10;
                 shape.MarginBottom = 10;
-                shape.Text = "12345";
+                shape.Text = "12345";*/
             }
         }
 
@@ -143,38 +60,48 @@ namespace Test
         {
             int groups = 3;
             int months = 12;
-            using (ExcelFile file = ExcelFile.Open(@"D:\temp\Sheet3.xlsx"))
+            using (ExcelFile file = ExcelFile.Open(@"D:\temp\Book1.xlsx"))
             {
-                var sheet = file.OpenWorksheet("AC1");
+                var sheet = file.OpenWorksheet("Sheet1");
                 for (int i = 0; i < groups; ++i)
                 {
-                    var column = sheet.GetColumn(((char)'A' + i).ToString());
-                    column.Width = 100;
+                    var column = sheet.GetColumn(i);
+                    column.Width = 15;
                     var cell = sheet.GetCell(column.Name + "1");
-                    cell.SetValue("Group " + i);
+                    cell.StringValue = "Group " + i;
                 }
                 for (int i = 0; i < months; ++i)
                 {
-                    var column = sheet.GetColumn(((char)'A' + i + groups).ToString());
-                    column.Width = 50;
+                    var column = sheet.GetColumn(i + groups);
+                    column.Width = 7;
                     //column.Color = i % 2 == 0 ? "Gray" : "White";
                     var cell = sheet.GetCell(column.Name + "1");
-                    cell.SetValue("Month " + i);
+                    cell.StringValue = "Month " + i;
                 }
                 // Row 1
                 var row = sheet.GetRow(2);
-                row.Height = 100;
+                //row.Height = 100;
                 for (int i = 0; i < groups; ++i)
                 {
-                    var columnName = ((char)'A' + i).ToString();
-                    var cell = sheet.GetCell(columnName + row.Index);
-                    cell.SetValue("Value " + i);
+                    var column = sheet.GetColumn(i);
+                    var cell = sheet.GetCell(column.Name + row.Index);
+                    cell.StringValue = "Value " + i;
                 }
-                var start = sheet.GetColumn(((char)'A' + groups).ToString());
-                var shape1 = sheet.Drawing.DrawShape(start, row, 0, 0, 250, 50);
-                shape1.Text = "Shape1";
-                var shape2 = sheet.Drawing.DrawShape(start, row, 50, 25, 250, 50);
-                shape2.Text = "Shape2";
+                var start = sheet.GetColumn(groups);
+                //var shape1 = sheet.Drawings.DrawShape(start, row, 0, 0, 250, 50);
+                //shape1.Text = "Shape1";
+                //var shape2 = sheet.Drawings.DrawShape(start, row, 50, 25, 250, 50);
+                //shape2.Text = "Shape2";
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using (ExcelFile file = ExcelFile.Open(@"D:\temp\Book1.xlsx"))
+            {
+                var sheet = file.OpenWorksheet("Sheet1");
+                var shape = sheet.DrawShape(2, 4, 2, 4, 4, 4, 4, 4);
+                shape.Text = "123";
             }
         }
     }

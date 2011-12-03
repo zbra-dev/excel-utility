@@ -2,96 +2,79 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using ExcelUtility.Utils;
 
 namespace ExcelUtility.Impl
 {
-    public class SharedStrings
+    internal class SharedStrings
     {
-        private XElement sharedStringsData;
-        private XNamespace Namespace { get { return sharedStringsData.GetDefaultNamespace(); } }
+        private string path;
+        private XElementData data;
+        private Dictionary<string, SharedString> map = new Dictionary<string, SharedString>();
 
-        public SharedStrings(XElement sharedStringsData)
+        public SharedStrings(string path)
         {
-            this.sharedStringsData = sharedStringsData;
+            this.path = path;
+            data = new XElementData(XDocument.Load(path).Root);
+            data.RemoveAttribute("count"); // optional values - will be recalculated
+            data.RemoveAttribute("uniqueCount"); // optional values - will be recalculated
+            ReadContents();
         }
 
-        public void Save(string xmlPath)
+        private void ReadContents()
         {
-            sharedStringsData.Save(string.Format("{0}/sharedStrings.xml",xmlPath));
-        }
-
-        public void CleanUpReferences(IList<IWorksheet> worksheets)
-        {
-            //prepare a list with all references
-            IList<StringReference> unusedStringReferences = new List<StringReference>();
-            IList<StringReference> stringRefences = new List<StringReference>();
-
-            int index = 0;
-            foreach (XElement element in sharedStringsData.Descendants(Namespace + "si"))
+            foreach (var si in data.Descendants("si"))
             {
-                unusedStringReferences.Add(new StringReference() { Reference = element, Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
-                stringRefences.Add(new StringReference() { Reference = element, Index = index, OldIndex = index, Text = element.Descendants(Namespace + "t").First().Value });
-                index++;
-            }
-
-            //send this list to worksheet, the itens founded there are removed from it.    
-            int stringsUsed = 0;
-            foreach (IWorksheet worksheet in worksheets)
-            {
-                worksheet.RemoveUnusedStringReferences(unusedStringReferences);
-                stringsUsed += worksheet.CountStringsUsed();
-            }
-
-            sharedStringsData.SetAttributeValue("count", stringsUsed);
-
-            //the remaining items are the items with no reference.
-            if (unusedStringReferences.Count > 0)
-            {
-                //update the referenceString.
-                foreach (StringReference unusedStringReference in unusedStringReferences)
-                {
-                    stringRefences.Remove(stringRefences.First(sr => sr.Reference == unusedStringReference.Reference));
-                    for (int k = unusedStringReference.Index; k < stringRefences.Count; k++)
-                        stringRefences[k].Index--;
-                    unusedStringReference.Reference.Remove();
-                }
-                
-                //Update references.
-                foreach (IWorksheet worksheet in worksheets)
-                    worksheet.UpdateStringReferences(stringRefences.Where(sr => sr.Index != sr.OldIndex).ToList());
-
-                sharedStringsData.SetAttributeValue("uniqueCount", stringRefences.Count);
-                //sharedStringsData.SetAttributeValue("uniqueCount", Convert.ToInt32(sharedStringsData.Attribute("uniqueCount").Value) - unusedStringReferences.Count);
+                var t = si.Element("t");
+                if (t == null)
+                    throw new ArgumentException("Invalid Shared Strings content");
+                var sharedString = new SharedString() { Value = t.Value, Index = map.Count };
+                map.Add(sharedString.Value, sharedString);
             }
         }
 
         public int GetStringReferenceOf(string value)
         {
-            if (sharedStringsData.Descendants(Namespace + "t").Any(t => t.Value == value))
+            SharedString sharedString = null;
+            if (!map.TryGetValue(value, out sharedString))
             {
-                IEnumerable<XElement> elements = sharedStringsData.Descendants(Namespace + "si");
-                int index = 0;
-                foreach (XElement element in elements)
-                {
-                    if (element.Descendants(Namespace + "t").FirstOrDefault().Value == value)
-                        break;
-                    index++;
-                }
-                return index;
+                sharedString = new SharedString() { Value = value, Index = map.Count };
+                map.Add(value, sharedString);
             }
-            return CreateNewStringReference(value);
+            return sharedString.Index;
         }
 
-        private int CreateNewStringReference(string value)
+        public void Save(IEnumerable<IWorksheet> worksheets)
         {
-            XElement newString = new XElement(Namespace + "si", new XElement(Namespace + "t"));
-            newString.SetElementValue(Namespace + "t", value);
+            CleanUpReferences(worksheets);
+            data.Save(path);
+        }
+
+        private void CleanUpReferences(IEnumerable<IWorksheet> worksheets)
+        {
+            data.RemoveNodes();
             
-            sharedStringsData.Add(newString);
-            //Update count value
-            sharedStringsData.SetAttributeValue("count", Convert.ToInt32(sharedStringsData.Attribute("count").Value) + 1);
-            sharedStringsData.SetAttributeValue("uniqueCount", Convert.ToInt32(sharedStringsData.Attribute("uniqueCount").Value) + 1);
-            return Convert.ToInt32(sharedStringsData.Attribute("uniqueCount").Value) - 1;//Index starts at ZERO!
+            var cellMap = worksheets
+                .SelectMany(w => w.GetRows())
+                .SelectMany(r => r.GetCells())
+                .Cast<Cell>()
+                .Where(c => c.IsTypeString)
+                .ToMultiMap(c => c.InternalValue);
+
+            var list = map.Values.Where(s => cellMap.ContainsKey(s.Index.ToString())).ToList();
+            for (int i = 0; i < list.Count; ++i)
+            {
+                data.Add("si").Add("t").Value = list[i].Value;
+                int previousIndex = list[i].Index;
+                foreach (var cell in cellMap[previousIndex.ToString()])
+                    cell.InternalValue = i.ToString();
+            }
+        }
+
+        private class SharedString
+        {
+            public string Value { get; set; }
+            public int Index { get; set; }
         }
     }
 }

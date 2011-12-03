@@ -5,14 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{5CDA1EA2-BDCD-4095-A048-A4C7011989AE}</ProjectGuid>
+    <ProjectGuid>{150949A2-3DE8-4208-B701-C2883E769EEB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ExcelUtility</RootNamespace>
-    <AssemblyName>ExcelUtility</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>ExcelUtility.UnitTests</RootNamespace>
+    <AssemblyName>ExcelUtility.UnitTests</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +21,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,47 +31,28 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Collections">
-      <HintPath>..\..\Libraries\ZBRA.Collections\net35.v2.0.X\Release\Collections.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\..\Libraries\SharpZipLib\net20.v0.86.X\Release\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="xunit, Version=1.8.0.1545, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\Libraries\xUnit\net20.v1.8.X\xunit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IColumn.cs" />
-    <Compile Include="Impl\Cell.cs" />
-    <Compile Include="Impl\Column.cs" />
-    <Compile Include="ExcelFile.cs" />
-    <Compile Include="ICell.cs" />
-    <Compile Include="Impl\ColumnRange.cs" />
-    <Compile Include="Impl\ContentTypes.cs" />
-    <Compile Include="Impl\Drawings.cs" />
-    <Compile Include="Impl\DrawPosition.cs" />
-    <Compile Include="Impl\RgbColorModel.cs" />
-    <Compile Include="Impl\ShapeProperties.cs" />
-    <Compile Include="Impl\SharedStrings.cs" />
-    <Compile Include="Impl\SheetColumns.cs" />
-    <Compile Include="Impl\SheetData.cs" />
-    <Compile Include="Impl\Workbook.cs" />
-    <Compile Include="Impl\Worksheet.cs" />
-    <Compile Include="IRow.cs" />
-    <Compile Include="IShape.cs" />
-    <Compile Include="IWorksheet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Impl\Row.cs" />
-    <Compile Include="Impl\Shape.cs" />
-    <Compile Include="Utils\CollectionExtensions.cs" />
-    <Compile Include="Utils\ColumnUtil.cs" />
-    <Compile Include="Utils\DelegateComparer.cs" />
-    <Compile Include="Utils\XElementData.cs" />
+    <Compile Include="Tests\CellTests.cs" />
+    <Compile Include="Tests\ColumnValidationTest.cs" />
+    <Compile Include="Tests\WorksheetTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelUtility\ExcelUtility.csproj">
+      <Project>{5CDA1EA2-BDCD-4095-A048-A4C7011989AE}</Project>
+      <Name>ExcelUtility</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
