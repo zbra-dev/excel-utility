@@ -55,8 +55,8 @@ namespace ExcelUtility.Impl
             data.RemoveNodes();
             
             var cellMap = worksheets
-                .SelectMany(w => w.GetRows())
-                .SelectMany(r => r.GetCells())
+                .SelectMany(w => w.DefinedRows)
+                .SelectMany(r => r.DefinedCells)
                 .Cast<Cell>()
                 .Where(c => c.IsTypeString)
                 .ToMultiMap(c => c.InternalValue);

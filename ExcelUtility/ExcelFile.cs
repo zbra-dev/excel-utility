@@ -18,9 +18,9 @@ namespace ExcelUtility
         private ContentTypes contentTypes;
         private SharedStrings sharedStrings;
         private Workbook workbook;
-        
-        private string decompressFolder;
         private string filePath;
+
+        public string DecompressFolder { get; private set; }
 
         private ExcelFile(string filePath)
         {
@@ -31,21 +31,33 @@ namespace ExcelUtility
         {
             this.filePath = filePath;
 
-            //decompressPath = string.Format("{0}{1}/", Path.GetTempPath(), Path.GetFileNameWithoutExtension(filePath));
-            decompressFolder = string.Format(@"D:/Temp/{0}/", Path.GetFileNameWithoutExtension(filePath));
-            new FastZip().ExtractZip(filePath, decompressFolder, null);
+            DecompressFolder = Path.GetTempFileName() + @"_excelutility\";
+            Directory.CreateDirectory(DecompressFolder);
+            new FastZip().ExtractZip(filePath, DecompressFolder, null);
 
-            var contentTypesData = new XElementData(XDocument.Load(string.Format("{0}[Content_Types].xml", decompressFolder)).Root);
+            var contentTypesData = new XElementData(XDocument.Load(string.Format("{0}[Content_Types].xml", DecompressFolder)).Root);
             contentTypes = new ContentTypes(contentTypesData);
-            sharedStrings = new SharedStrings(decompressFolder + contentTypes.GetSharedStringsPath());
-            workbook = new Workbook(decompressFolder, contentTypes, sharedStrings);
+            sharedStrings = new SharedStrings(DecompressFolder + contentTypes.GetSharedStringsPath());
+            workbook = new Workbook(DecompressFolder, contentTypes, sharedStrings);
         }
 
-        private void Save()
+        public void Save()
         {
             sharedStrings.Save(workbook.Worksheets);
             workbook.Save();
-            new FastZip().CreateZip(filePath, decompressFolder, true, null);
+        }
+
+        private void Close()
+        {
+            new FastZip().CreateZip(filePath, DecompressFolder, true, null);
+            try
+            {
+                Directory.Delete(DecompressFolder, true);
+            }
+            catch (Exception)
+            {
+                // if can't delete temp folder then just log and ignore exception
+            }
         }
 
         public IWorksheet OpenWorksheet(string name)
@@ -55,7 +67,7 @@ namespace ExcelUtility
 
         public void Dispose()
         {
-            Save();
+            Close();
         }
     }
 }

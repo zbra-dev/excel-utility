@@ -94,6 +94,10 @@ namespace ExcelUtility.Impl
             data.Add("clientData");
         }
 
+        public void Remove()
+        {
+            data.Remove();
+        }
 
     }
 }

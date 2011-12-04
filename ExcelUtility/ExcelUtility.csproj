@@ -41,10 +41,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -62,15 +59,18 @@
     <Compile Include="Impl\SharedStrings.cs" />
     <Compile Include="Impl\SheetColumns.cs" />
     <Compile Include="Impl\SheetData.cs" />
+    <Compile Include="Impl\SheetViews.cs" />
     <Compile Include="Impl\Workbook.cs" />
     <Compile Include="Impl\Worksheet.cs" />
     <Compile Include="IRow.cs" />
     <Compile Include="IShape.cs" />
+    <Compile Include="ISheetViews.cs" />
     <Compile Include="IWorksheet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Impl\Row.cs" />
     <Compile Include="Impl\Shape.cs" />
     <Compile Include="Utils\CollectionExtensions.cs" />
+    <Compile Include="Utils\ColorUtil.cs" />
     <Compile Include="Utils\ColumnUtil.cs" />
     <Compile Include="Utils\DelegateComparer.cs" />
     <Compile Include="Utils\XElementData.cs" />

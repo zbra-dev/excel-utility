@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ExcelUtility.Utils;
@@ -7,22 +8,24 @@ namespace ExcelUtility.Impl
 {
     internal class Row : IRow
     {
-        public static Row FromExisting(XElementData data, double defaultHeight, SharedStrings sharedStrings)
+        public static Row FromExisting(XElementData data, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
         {
-            return new Row(data, defaultHeight, sharedStrings);
+            return new Row(data, defaultHeight, sharedStrings, sheetColumns);
         }
 
-        public static Row New(XElementData data, int index, SharedStrings sharedStrings)
+        public static Row New(XElementData data, int index, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
         {
-            return new Row(data, index, sharedStrings);
+            return new Row(data, index, defaultHeight, sharedStrings, sheetColumns);
         }
 
         private List<ICell> cells = null; // lazy load
         private double defaultHeight;
-        public XElementData Data { get; private set; }
         private SharedStrings sharedStrings;
+        private SheetColumns sheetColumns;
 
+        public XElementData Data { get; set; }
         public int Index { get; private set; }
+        public IEnumerable<ICell> DefinedCells { get { return LazyLoadCells(); } }
         
         public double Height
         { 
@@ -38,29 +41,28 @@ namespace ExcelUtility.Impl
         }
 
         // existing rows constructor
-        private Row(XElementData data, double defaultHeight, SharedStrings sharedStrings)
+        private Row(XElementData data, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
         {
             this.Data = data;
             this.defaultHeight = defaultHeight;
             this.sharedStrings = sharedStrings;
+            this.sheetColumns = sheetColumns;
             Index = int.Parse(data["r"], NumberFormatInfo.InvariantInfo);
             data.RemoveAttribute("spans"); // clear spans attribute, will be recalculated
         }
 
         // new rows constructor
-        private Row(XElementData data, int index, SharedStrings sharedStrings)
+        private Row(XElementData data, int index, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
         {
+            if (index == 0)
+                throw new ArgumentException("Row index can't be zero (0)", "index");
             this.Data = data;
+            this.defaultHeight = defaultHeight;
             this.sharedStrings = sharedStrings;
+            this.sheetColumns = sheetColumns;
             Index = index;
             data.SetAttributeValue("r", index);
             data.SetAttributeValue("x14ac", "dyDescent", 0.25); // office 2010 specific attribute
-        }
-
-        public IEnumerable<ICell> GetCells()
-        {
-            LazyLoadCells();
-            return cells;
         }
 
         public ICell GetCell(string columnName)
@@ -71,14 +73,21 @@ namespace ExcelUtility.Impl
             if (insert < 0)
             {
                 insert = ~insert;
-                XElementData cellData;
-                if (insert == 0)
-                    cellData = Data.Add("c");
-                else
-                    cellData = ((Cell)cells[insert - 1]).Data.AddAfterSelf("c");
-                cells.Insert(insert, Cell.New(cellData, search.Name, sharedStrings));
+                AddCell(columnName, insert);
             }
             return cells[insert];
+        }
+
+        private void AddCell(string columnName, int cellIndex)
+        {
+            XElementData cellData;
+            if (cellIndex == 0)
+                cellData = Data.Add("c");
+            else
+                cellData = ((Cell)cells[cellIndex - 1]).Data.AddAfterSelf("c");
+            var newCell = Cell.New(cellData, columnName + Index, sharedStrings);
+            newCell.Style = sheetColumns.GetColumn(columnName).Style;
+            cells.Insert(cellIndex, newCell);
         }
 
         public ICell GetCell(int columnIndex)
@@ -94,10 +103,11 @@ namespace ExcelUtility.Impl
             return compare;
         }
 
-        private void LazyLoadCells()
+        private IList<ICell> LazyLoadCells()
         {
             if (cells == null)
                 cells = Data.Descendants("c").Select(c => (ICell)(Cell.FromExisting(c, sharedStrings))).ToList();
+            return cells;
         }
 
         private class FakeCell : ICell
@@ -107,7 +117,7 @@ namespace ExcelUtility.Impl
             public string Name { get; set; }
             public long LongValue { get; set; }
             public bool IsTypeString { get; set; }
-            public XElementData Data { get; private set; }
+            public int? Style { get; set; }
         }
 
     }

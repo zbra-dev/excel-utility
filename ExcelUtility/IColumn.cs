@@ -6,6 +6,7 @@ namespace ExcelUtility
         string Name { get; }
         long Index { get; }
         double Width { get; set; }
-        double CustomWidth { get; set; }
+        int? InternalColor { get; set; }
+        int? Style { get; set; }
     }
 }

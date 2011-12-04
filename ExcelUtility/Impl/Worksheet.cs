@@ -20,10 +20,14 @@ namespace ExcelUtility.Impl
 
         private Drawings drawings;
         private SharedStrings sharedStrings;
-        private SheetColumns columns;
+        private SheetColumns sheetColumns;
         private SheetData sheetData;
         
         public string Name { get; private set; }
+        public IEnumerable<IRow> DefinedRows { get { return sheetData.DefinedRows; } }
+        public IEnumerable<IColumn> DefinedColumns { get { return sheetColumns.DefinedColumns; } }
+        public IEnumerable<IShape> Shapes { get { return drawings.Shapes; } }
+        public ISheetViews SheetView { get; private set; }
 
         public Worksheet(XElementData data, string worksheetFolder, SharedStrings sharedStrings, string name, int sheetId)
         {
@@ -43,8 +47,9 @@ namespace ExcelUtility.Impl
         {
             defaultRowHeight = double.Parse(data.Element("sheetFormatPr")["defaultRowHeight"], NumberFormatInfo.InvariantInfo);
             var cols = data.Element("cols") ?? data.Element("sheetFormatPr").AddAfterSelf("cols");
-            columns = new SheetColumns(cols);
-            sheetData = new SheetData(data.Element("sheetData"), defaultRowHeight, sharedStrings);
+            sheetColumns = new SheetColumns(cols);
+            sheetData = new SheetData(data.Element("sheetData"), defaultRowHeight, sharedStrings, sheetColumns);
+            SheetView = new SheetViews(data.Element("sheetViews"));
             LoadDrawings();
         }
 
@@ -57,22 +62,17 @@ namespace ExcelUtility.Impl
 
         public IColumn GetColumn(string name)
         {
-            return columns.GetColumn(name);
+            return sheetColumns.GetColumn(name);
         }
 
         public IColumn GetColumn(int index)
         {
-            return columns.GetColumn(index);
+            return sheetColumns.GetColumn(index);
         }
 
         public IRow GetRow(int index)
         {
             return sheetData.GetRow(index);
-        }
-
-        public IEnumerable<IRow> GetRows()
-        {
-            return sheetData.GetRows();
         }
 
         public ICell GetCell(string name)
@@ -82,6 +82,7 @@ namespace ExcelUtility.Impl
                 throw new ArgumentException(string.Format("Invalid cell [{0}]", name));
             return sheetData.GetRow(int.Parse(match.Groups[2].Value)).GetCell(match.Groups[1].Value);
         }
+
 
         public IShape DrawShape(int columnFrom, double columnFromOffset, int rowFrom, double rowFromOffset, int columnTo, double columnToOffset, int rowTo, double rowToOffset)
         {
@@ -99,7 +100,7 @@ namespace ExcelUtility.Impl
                 RowIndex = rowIndex,
                 RowOffset = (int)(rowOffset * EmuFactor),
             };
-            pos.X = ((int)(columns.GetXPosition(pos.ColumnIndex) * EmuFactor)) + pos.ColumnOffset;
+            pos.X = ((int)(sheetColumns.GetXPosition(pos.ColumnIndex) * EmuFactor)) + pos.ColumnOffset;
             pos.Y = ((int)(sheetData.GetYPosition(pos.RowIndex) * EmuFactor)) + pos.RowOffset;
             return pos;
         }
@@ -108,7 +109,7 @@ namespace ExcelUtility.Impl
         {
             if (drawings != null)
                 drawings.Save();
-            columns.Save();
+            sheetColumns.Save();
             data.Save(string.Format("{0}/sheet{1}.xml", worksheetFolder, sheetId));
         }
 

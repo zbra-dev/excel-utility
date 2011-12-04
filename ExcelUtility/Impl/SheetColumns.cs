@@ -9,6 +9,8 @@ namespace ExcelUtility.Impl
         private XElementData data;
         private List<Column> columns = new List<Column>();
 
+        public IEnumerable<IColumn> DefinedColumns { get { return columns.Cast<IColumn>(); } }
+
         public SheetColumns(XElementData data)
         {
             this.data = data;
@@ -28,13 +30,13 @@ namespace ExcelUtility.Impl
             }
         }
 
-        public Column GetColumn(string name)
+        public IColumn GetColumn(string name)
         {
             long index = ColumnUtil.GetColumnIndex(name);
             return GetColumn(index, name);
         }
 
-        public Column GetColumn(long index)
+        public IColumn GetColumn(long index)
         {
             string name = ColumnUtil.GetColumnName(index);
             return GetColumn(index, name);

@@ -10,23 +10,24 @@ namespace ExcelUtility.Impl
         private XElementData data;
         private double defaultRowHeight;
         private SharedStrings sharedStrings;
+        private SheetColumns sheetColumns;
         private List<IRow> rows;
 
-        public SheetData(XElementData data, double defaultRowHeight, SharedStrings sharedStrings)
+        public IEnumerable<IRow> DefinedRows { get { return rows; } }
+
+        public SheetData(XElementData data, double defaultRowHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
         {
             this.data = data;
             this.defaultRowHeight = defaultRowHeight;
             this.sharedStrings = sharedStrings;
-            rows = data.Descendants("row").Select(r => ((IRow)Row.FromExisting(r, defaultRowHeight, sharedStrings))).ToList();
-        }
-
-        public IEnumerable<IRow> GetRows()
-        {
-            return rows;
+            this.sheetColumns = sheetColumns;
+            rows = data.Descendants("row").Select(r => ((IRow)Row.FromExisting(r, defaultRowHeight, sharedStrings, sheetColumns))).ToList();
         }
 
         public IRow GetRow(int index)
         {
+            if (index == 0)
+                throw new ArgumentException("Row index can't be zero (0)", "index");
             var search = new FakeRow() { Index = index };
             int insert = rows.BinarySearch(search, CompareRows);
             if (insert < 0)
@@ -37,7 +38,7 @@ namespace ExcelUtility.Impl
                     rowData = data.Add("row");
                 else
                     rowData = ((Row)rows[insert - 1]).Data.AddAfterSelf("row");
-                rows.Insert(insert, Row.New(rowData, index, sharedStrings));
+                rows.Insert(insert, Row.New(rowData, index, defaultRowHeight, sharedStrings, sheetColumns));
             }
             return rows[insert];
         }
@@ -60,6 +61,7 @@ namespace ExcelUtility.Impl
         {
             public int Index { get; set; }
             public double Height { get; set; }
+            public IEnumerable<ICell> DefinedCells { get; set; }
 
             public ICell GetCell(string columnName)
             {

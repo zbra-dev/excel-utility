@@ -25,6 +25,7 @@ namespace ExcelUtility.Impl
         public long LongValue { get { return GetLongValue(); } set { SetLongValue(value); } }
         public string InternalValue { get { return Data.Element("v").Value; } set { Data.SetElementValue("v", value); } }
         public string Name { get; private set; }
+        public int? Style { get { var s = Data["s"]; return s == null ? null : (int?)int.Parse(s); } set { Data.SetAttributeValue("s", value); } }
 
         // existing cells constructor
         private Cell(XElementData data, SharedStrings sharedStrings)

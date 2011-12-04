@@ -1,6 +1,4 @@
-﻿
-using ExcelUtility.Utils;
-namespace ExcelUtility
+﻿namespace ExcelUtility
 {
     public interface ICell
     {
@@ -9,6 +7,6 @@ namespace ExcelUtility
         long LongValue { get; set; }
         string Name { get; }
         bool IsTypeString { get; }
-        XElementData Data { get; }
+        int? Style { get; set; }
     }
 }

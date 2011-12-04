@@ -6,9 +6,9 @@ namespace ExcelUtility
     {
         int Index { get; }
         double Height { get; set; }
+        IEnumerable<ICell> DefinedCells { get; }
 
         ICell GetCell(string columnName);
         ICell GetCell(int columnIndex);
-        IEnumerable<ICell> GetCells();
     }
 }

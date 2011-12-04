@@ -10,7 +10,9 @@ namespace ExcelUtility.Impl
         private string path;
         private XElementData data;
         private Dictionary<int, Shape> map = new Dictionary<int, Shape>();
-        
+
+        public IEnumerable<IShape> Shapes { get { return map.Values.Cast<IShape>(); } }
+
         public Drawings(string path)
         {
             this.path = path;
@@ -28,5 +30,6 @@ namespace ExcelUtility.Impl
         {
             data.Save(path);
         }
+
     }
 }

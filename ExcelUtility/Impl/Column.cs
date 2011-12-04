@@ -9,15 +9,15 @@ namespace ExcelUtility.Impl
         public string Name { get; private set; }
         public long Index { get; private set; }
         public double Width { get; set; }
-        public double CustomWidth { get; set; }
-        public string Style { get; set; }
+        public int? InternalColor { get; set; }
+        public int? Style { get; set; }
 
         public Column(string name, long index, double width)
         {
             Name = name;
             Index = index;
             Width = width;
-            CustomWidth = 1;
+            InternalColor = null;
             Style = null;
         }
 
@@ -30,7 +30,7 @@ namespace ExcelUtility.Impl
         {
             var range = new ColumnRange(data, Index + 1, Index + 1, Width);
             if (Style != null)
-                range.Style = Style;
+                range.Style = Style.ToString();
             if (Width != DefaultWidth)
                 range.CustomWidth = true;
             return range;
