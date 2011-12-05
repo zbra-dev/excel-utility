@@ -2,6 +2,8 @@
 using System.Xml.Linq;
 using ExcelUtility.UnitTests.Util;
 using Xunit;
+using System;
+using System.Globalization;
 
 namespace ExcelUtility.UnitTests.Tests
 {
@@ -95,10 +97,15 @@ namespace ExcelUtility.UnitTests.Tests
                 worksheet.GetRow(23).Height = NewHeight / 2;
             }
 
+            //Check
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                Assert.Equal(NewHeight / 2, worksheet.GetRow(23).Height);
+                var data = (XElement)reflection.GetValue(reflection.GetValue(reflection.GetValue(worksheet, "sheetData"), "data"), "data");
+                Assert.NotNull(data);
+                var firstRow = data.Descendants(data.GetDefaultNamespace() + "row").Where(r => r.Attribute("r").Value == "23").FirstOrDefault();
+                Assert.NotNull(firstRow);
+                Assert.Equal(NewHeight / 2,  Convert.ToDouble(firstRow.Value, NumberFormatInfo.InvariantInfo));
             }
 
             //Change last row in a range
@@ -120,7 +127,11 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                Assert.Equal(NewHeight / 2, worksheet.GetRow(36).Height);
+                var data = (XElement)reflection.GetValue(reflection.GetValue(reflection.GetValue(worksheet, "sheetData"), "data"), "data");
+                Assert.NotNull(data);
+                var lastRow = data.Descendants(data.GetDefaultNamespace() + "row").Where(r => r.Attribute("r").Value == "36").FirstOrDefault();
+                Assert.NotNull(lastRow);
+                Assert.Equal(NewHeight / 2, Convert.ToDouble(lastRow.Value, NumberFormatInfo.InvariantInfo));
             }
 
             //Changing a midle row in the range
@@ -142,7 +153,11 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                Assert.Equal(NewHeight / 2, worksheet.GetRow(44).Height);
+                var data = (XElement)reflection.GetValue(reflection.GetValue(reflection.GetValue(worksheet, "sheetData"), "data"), "data");
+                Assert.NotNull(data);
+                var middleRow = data.Descendants(data.GetDefaultNamespace() + "row").Where(r => r.Attribute("r").Value == "44").FirstOrDefault();
+                Assert.NotNull(middleRow);
+                Assert.Equal(NewHeight / 2, Convert.ToDouble(middleRow.Value, NumberFormatInfo.InvariantInfo));
             }
         }
     }

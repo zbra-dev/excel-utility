@@ -1,7 +1,9 @@
+using System.Linq;
 using System.Xml.Linq;
-using ExcelUtility.UnitTests.Utility;
+using ExcelUtility.UnitTests.Util;
 using ExcelUtility.Utils;
 using Xunit;
+using System;
 
 namespace ExcelUtility.UnitTests.Tests
 {
@@ -23,14 +25,22 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
+                var columnData = (XElement)reflection.GetValue(reflection.GetValue(reflection.GetValue(worksheet, "sheetColumns"), "data"), "data");
+                Assert.NotNull(columnData);
+
                 var colA = worksheet.GetColumn("A");
                 Assert.NotNull(colA);
                 var cola = worksheet.GetColumn("a");
                 Assert.NotNull(cola);
                 Assert.Equal(colA, cola);
 
-                var col = worksheet.GetColumn("ZZ");
+                string lastColumnName = "ZZ";
+                var col = worksheet.GetColumn(lastColumnName);
                 Assert.NotNull(col);
+
+                var lastColumn = columnData.Descendants(columnData.GetDefaultNamespace() + "col").Where(r => Convert.ToInt64(r.Attribute("min").Value) >= ColumnUtil.GetColumnIndex(lastColumnName) && Convert.ToInt64(r.Attribute("max").Value) <= ColumnUtil.GetColumnIndex(lastColumnName)).FirstOrDefault();
+                Assert.NotNull(lastColumn);
+                
                 col = worksheet.GetColumn("GH");
                 Assert.NotNull(col);
 
@@ -104,25 +114,6 @@ namespace ExcelUtility.UnitTests.Tests
                 var worksheet = excelFile.OpenWorksheet(sheetName);
                 Assert.Equal(NewWidth / 2, worksheet.GetColumn("J").Width);
             }
-        }
-
-        [Fact]
-        public void ChangeCustonWidth()
-        {
-            //This property, by self 
-            using (var excelFile = ExcelFile.Open(path))
-            {
-                var worksheet = excelFile.OpenWorksheet(sheetName);
-                worksheet.GetColumn("I").CustomWidth = 2234;
-            }
-
-            using (var excelFile = ExcelFile.Open(path))
-            {
-                var worksheet = excelFile.OpenWorksheet(sheetName);
-                Assert.Equal(2234, worksheet.GetColumn("I").CustomWidth);
-            }
-
-            //TODO: Check file integrity.
         }
     }
 }
