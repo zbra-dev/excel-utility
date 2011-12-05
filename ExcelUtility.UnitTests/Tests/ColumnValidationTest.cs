@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ExcelUtility;
+using System.Xml.Linq;
+using ExcelUtility.UnitTests.Utility;
+using ExcelUtility.Utils;
 using Xunit;
 
 namespace ExcelUtility.UnitTests.Tests
@@ -12,32 +10,37 @@ namespace ExcelUtility.UnitTests.Tests
         private const double NewWidth = 12;
         private const string path = @"d:\temp\DefaultWorksheet.xlsx";
         private const string sheetName = "Paosdpoasdp";
+        private ReflectionUtil reflection;
 
+        public ColumnValidationTest()
+        {
+            reflection = new ReflectionUtil();
+        }
 
         [Fact]
-        public void GetUnexistingColumn()
+        public void GetColumn()
         {
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                IColumn col = worksheet.GetColumn("GX");
+                var colA = worksheet.GetColumn("A");
+                Assert.NotNull(colA);
+                var cola = worksheet.GetColumn("a");
+                Assert.NotNull(cola);
+                Assert.Equal(colA, cola);
+
+                var col = worksheet.GetColumn("ZZ");
                 Assert.NotNull(col);
+                col = worksheet.GetColumn("GH");
+                Assert.NotNull(col);
+
+                col = worksheet.GetColumn("AAA");
+                Assert.Null(col);
             }
         }
 
         [Fact]
-        public void GetColumnWithLowerCase()
-        {
-            using (var excelFile = ExcelFile.Open(path))
-            {
-                var worksheet = excelFile.OpenWorksheet(sheetName);
-                IColumn col = worksheet.GetColumn("m");
-                Assert.NotNull(col);
-            }
-        }
-
-        [Fact]
-        public void CheckingWidth()
+        public void TestingRangeColumns()
         {
             using (var excelFile = ExcelFile.Open(path))
             {
@@ -52,17 +55,17 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
+
+                var data = (XElement) reflection.GetValue((XElementData)reflection.GetValue(worksheet, "data"), "data");
+
                 Assert.Equal(NewWidth, worksheet.GetColumn("F").Width);
                 Assert.Equal(NewWidth, worksheet.GetColumn("G").Width);
                 Assert.Equal(NewWidth, worksheet.GetColumn("H").Width);
                 Assert.Equal(NewWidth, worksheet.GetColumn("I").Width);
                 Assert.Equal(NewWidth, worksheet.GetColumn("J").Width);
             }
-        }
 
-        [Fact]
-        public void ChangeMidleColumnInRange()
-        {
+            //Changing midle column of range
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
@@ -75,16 +78,12 @@ namespace ExcelUtility.UnitTests.Tests
                 var worksheet = excelFile.OpenWorksheet(sheetName);
                 Assert.Equal(NewWidth / 2, worksheet.GetColumn("H").Width);
             }
-        }
 
-        [Fact]
-        public void ChangeFirstColumnInRange()
-        {
+            //Changing first column of range
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                var firstColumn = worksheet.GetColumn("F");
-                firstColumn.Width = NewWidth / 2;
+                worksheet.GetColumn("F").Width = NewWidth / 2;
             }
 
             using (var excelFile = ExcelFile.Open(path))
@@ -92,16 +91,12 @@ namespace ExcelUtility.UnitTests.Tests
                 var worksheet = excelFile.OpenWorksheet(sheetName);
                 Assert.Equal(NewWidth / 2, worksheet.GetColumn("F").Width);
             }
-        }
 
-        [Fact]
-        public void ChangeLastColumnInRange()
-        {
+            //Changing last column of range.
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                var lastColumn = worksheet.GetColumn("J");
-                lastColumn.Width = NewWidth / 2;
+                worksheet.GetColumn("J").Width = NewWidth / 2;
             }
 
             using (var excelFile = ExcelFile.Open(path))
@@ -109,24 +104,25 @@ namespace ExcelUtility.UnitTests.Tests
                 var worksheet = excelFile.OpenWorksheet(sheetName);
                 Assert.Equal(NewWidth / 2, worksheet.GetColumn("J").Width);
             }
-
         }
 
         [Fact]
-        public void FakeChangeAtColumn()
+        public void ChangeCustonWidth()
         {
+            //This property, by self 
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                var anyColumn = worksheet.GetColumn("I");
-                anyColumn.Width = NewWidth;
+                worksheet.GetColumn("I").CustomWidth = 2234;
             }
 
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                Assert.Equal(NewWidth, worksheet.GetColumn("I").Width);
+                Assert.Equal(2234, worksheet.GetColumn("I").CustomWidth);
             }
+
+            //TODO: Check file integrity.
         }
     }
 }
