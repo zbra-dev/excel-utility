@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using ExcelUtility;
+using ExcelUtility.UnitTests.Tests;
 
 namespace Test
 {
@@ -103,6 +104,11 @@ namespace Test
                 var shape = sheet.DrawShape(2, 4, 2, 4, 4, 4, 4, 4);
                 shape.Text = "123";
             }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            new ColumnValidationTest().TestingRangeColumns();
         }
     }
 }

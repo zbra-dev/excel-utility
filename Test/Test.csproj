@@ -94,6 +94,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ExcelUtility.UnitTests\ExcelUtility.UnitTests.csproj">
+      <Project>{150949A2-3DE8-4208-B701-C2883E769EEB}</Project>
+      <Name>ExcelUtility.UnitTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ExcelUtility\ExcelUtility.csproj">
       <Project>{5CDA1EA2-BDCD-4095-A048-A4C7011989AE}</Project>
       <Name>ExcelUtility</Name>

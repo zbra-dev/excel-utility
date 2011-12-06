@@ -4,6 +4,7 @@ using ExcelUtility.UnitTests.Util;
 using ExcelUtility.Utils;
 using Xunit;
 using System;
+using System.Globalization;
 
 namespace ExcelUtility.UnitTests.Tests
 {
@@ -65,9 +66,16 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
+                var data = (XElement)reflection.GetValue(reflection.GetValue(worksheet, "data"), "data");
+                
+                var rangeCol = data.Descendants(data.GetDefaultNamespace() + "col").Where(c => Convert.ToInt32(c.Attribute("min").Value) == ColumnUtil.GetColumnIndex("F") + 1 && Convert.ToInt32(c.Attribute("max").Value) == ColumnUtil.GetColumnIndex("J") + 1);
+                Assert.NotNull(rangeCol);
+                
+                var item = rangeCol.FirstOrDefault();
+                Assert.NotNull(item);
 
-                var data = (XElement) reflection.GetValue((XElementData)reflection.GetValue(worksheet, "data"), "data");
-
+                Assert.Equal(NewWidth, Convert.ToDouble(item.Attribute("width").Value, NumberFormatInfo.InvariantInfo));
+                
                 Assert.Equal(NewWidth, worksheet.GetColumn("F").Width);
                 Assert.Equal(NewWidth, worksheet.GetColumn("G").Width);
                 Assert.Equal(NewWidth, worksheet.GetColumn("H").Width);
@@ -79,6 +87,7 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
+
                 var column = worksheet.GetColumn("H");
                 column.Width = NewWidth / 2;
             }
@@ -86,6 +95,12 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
+                var data = (XElement)reflection.GetValue(reflection.GetValue(worksheet, "data"), "data");
+                var colH = data.Descendants(data.GetDefaultNamespace() + "col").Where(c => Convert.ToInt32(c.Attribute("min").Value) == ColumnUtil.GetColumnIndex("H") && Convert.ToInt32(c.Attribute("max").Value) == ColumnUtil.GetColumnIndex("H")).FirstOrDefault();
+                Assert.NotNull(colH);
+
+                Assert.Equal(NewWidth / 2, Convert.ToDouble(colH.Attribute("width").Value, NumberFormatInfo.InvariantInfo));
+                
                 Assert.Equal(NewWidth / 2, worksheet.GetColumn("H").Width);
             }
 
@@ -93,26 +108,40 @@ namespace ExcelUtility.UnitTests.Tests
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                worksheet.GetColumn("F").Width = NewWidth / 2;
+                worksheet.GetColumn("F").Width = NewWidth / 2 + 2;
             }
 
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                Assert.Equal(NewWidth / 2, worksheet.GetColumn("F").Width);
+
+                var data = (XElement)reflection.GetValue(reflection.GetValue(worksheet, "data"), "data");
+                var colF = data.Descendants(data.GetDefaultNamespace() + "col").Where(c => Convert.ToInt32(c.Attribute("min").Value) == ColumnUtil.GetColumnIndex("F") && Convert.ToInt32(c.Attribute("max").Value) == ColumnUtil.GetColumnIndex("F")).FirstOrDefault();
+                Assert.NotNull(colF);
+
+                Assert.Equal(NewWidth / 2 + 2, Convert.ToDouble(colF.Attribute("width").Value, NumberFormatInfo.InvariantInfo));
+                
+                Assert.Equal(NewWidth / 2 + 2, worksheet.GetColumn("F").Width);
             }
 
             //Changing last column of range.
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                worksheet.GetColumn("J").Width = NewWidth / 2;
+                worksheet.GetColumn("J").Width = NewWidth / 2 + 1;
             }
 
             using (var excelFile = ExcelFile.Open(path))
             {
                 var worksheet = excelFile.OpenWorksheet(sheetName);
-                Assert.Equal(NewWidth / 2, worksheet.GetColumn("J").Width);
+
+                var data = (XElement)reflection.GetValue(reflection.GetValue(worksheet, "data"), "data");
+                var colJ = data.Descendants(data.GetDefaultNamespace() + "col").Where(c => Convert.ToInt32(c.Attribute("min").Value) == ColumnUtil.GetColumnIndex("J") && Convert.ToInt32(c.Attribute("max").Value) == ColumnUtil.GetColumnIndex("J")).FirstOrDefault();
+                Assert.NotNull(colJ);
+
+                Assert.Equal(NewWidth / 2 + 1, Convert.ToDouble(colJ.Attribute("width").Value, NumberFormatInfo.InvariantInfo));
+                
+                Assert.Equal(NewWidth / 2 + 1, worksheet.GetColumn("J").Width);
             }
         }
     }
