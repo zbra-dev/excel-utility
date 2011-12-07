@@ -49,6 +49,7 @@
     <Compile Include="Tests\ColumnValidationTest.cs" />
     <Compile Include="Tests\RowTest.cs" />
     <Compile Include="Tests\WorksheetTests.cs" />
+    <Compile Include="Tests\XElementDataTest.cs" />
     <Compile Include="Util\ReflectionUtil.cs" />
   </ItemGroup>
   <ItemGroup>
