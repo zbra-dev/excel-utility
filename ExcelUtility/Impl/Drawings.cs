@@ -23,6 +23,7 @@ namespace ExcelUtility.Impl
         public IShape DrawShape(DrawPosition from, DrawPosition to)
         {
             var shape = Shape.New(data.Add("xdr", "twoCellAnchor"), map.Count == 0 ? 2 : map.Keys.Max() + 1, from, to);
+            map.Add(shape.Id, shape);
             return shape;
         }
 

@@ -44,7 +44,7 @@ namespace ExcelUtility.Impl
             var posData = data.Add(name);
             posData.SetElementValue("col", pos.ColumnIndex);
             posData.SetElementValue("colOff", pos.ColumnOffset);
-            posData.SetElementValue("row", pos.RowIndex);
+            posData.SetElementValue("row", pos.RowIndex - 1);
             posData.SetElementValue("rowOff", pos.RowOffset);
         }
 

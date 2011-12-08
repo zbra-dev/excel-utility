@@ -9,7 +9,6 @@ namespace ExcelUtility.Impl
         public string Name { get; private set; }
         public long Index { get; private set; }
         public double Width { get; set; }
-        public int? InternalColor { get; set; }
         public int? Style { get; set; }
 
         public Column(string name, long index, double width)
@@ -17,7 +16,6 @@ namespace ExcelUtility.Impl
             Name = name;
             Index = index;
             Width = width;
-            InternalColor = null;
             Style = null;
         }
 

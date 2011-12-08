@@ -23,7 +23,7 @@ namespace ExcelUtility.Impl
             this.data = data;
             Min = min;
             Max = max;
-            Width = width;
+            Width = ((int)(width * 256)) / (double)256;
         }
     }
 }
