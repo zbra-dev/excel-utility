@@ -7,8 +7,8 @@ namespace ExcelUtility.Impl
         public int ColumnOffset { get; set; }
         public int RowIndex { get; set; }
         public int RowOffset { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        //public int X { get; set; }
+        //public int Y { get; set; }
 
         public DrawPosition()
         {

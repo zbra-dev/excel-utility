@@ -100,8 +100,8 @@ namespace ExcelUtility.Impl
                 RowIndex = rowIndex,
                 RowOffset = (int)(rowOffset * EmuFactor),
             };
-            pos.X = ((int)(sheetColumns.GetXPosition(pos.ColumnIndex) * EmuFactor)) + pos.ColumnOffset;
-            pos.Y = ((int)(sheetData.GetYPosition(pos.RowIndex) * EmuFactor)) + pos.RowOffset;
+            //pos.X = ((int)(sheetColumns.GetXPosition(pos.ColumnIndex) * EmuFactor)) + pos.ColumnOffset;
+            //pos.Y = ((int)(sheetData.GetYPosition(pos.RowIndex) * EmuFactor)) + pos.RowOffset;
             return pos;
         }
 

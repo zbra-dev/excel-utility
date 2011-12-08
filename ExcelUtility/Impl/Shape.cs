@@ -33,6 +33,11 @@ namespace ExcelUtility.Impl
             WriteContents(id, from, to);
         }
 
+        public void SetSolidFill(int r, int g, int b)
+        {
+            ShapeProperties.SetSolidFill(r, g, b);
+        }
+
         public void SetPositions(DrawPosition from, DrawPosition to)
         {
             SetPosition("from", from);
@@ -69,13 +74,13 @@ namespace ExcelUtility.Impl
             var style = shape.Add("style");
             var lineReference = style.Add("a", "lnRef");
             lineReference["idx"] = "0";
-            RgbColorModel.AddPercentageColor(lineReference, 0, 0, 0);
+            RgbColorModel.SetPercentageColor(lineReference, 0, 0, 0);
             var fillReference = style.Add("a", "fillRef");
             fillReference["idx"] = "0";
-            RgbColorModel.AddPercentageColor(fillReference, 0, 0, 0);
+            RgbColorModel.SetPercentageColor(fillReference, 0, 0, 0);
             var effectReference = style.Add("a", "effectRef");
             effectReference["idx"] = "0";
-            RgbColorModel.AddPercentageColor(effectReference, 0, 0, 0);
+            RgbColorModel.SetPercentageColor(effectReference, 0, 0, 0);
             var fontReference = style.Add("a", "fontRef");
             fontReference["idx"] = "minor";
             fontReference.Add("schemeClr")["val"] = "dk1";
@@ -87,7 +92,7 @@ namespace ExcelUtility.Impl
             var run = textBody.Add("a", "p").Add("r");
             var runProperties = run.Add("rPr");
             runProperties.SetAttributeValues("lang=en-US sz=1000");
-            RgbColorModel.AddHexColor(runProperties.Add("solidFill"), 0, 0, 0);
+            RgbColorModel.SetHexColor(runProperties.Add("solidFill"), 0, 0, 0);
             runProperties.Add("latin")["typeface"] = "Arial";
             run.Add("t").Value = "";
 
