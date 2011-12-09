@@ -54,6 +54,8 @@
     <Compile Include="Impl\ContentTypes.cs" />
     <Compile Include="Impl\Drawings.cs" />
     <Compile Include="Impl\DrawPosition.cs" />
+    <Compile Include="ISheetData.cs" />
+    <Compile Include="IWorkbook.cs" />
     <Compile Include="Impl\RgbColorModel.cs" />
     <Compile Include="Impl\ShapeProperties.cs" />
     <Compile Include="Impl\SharedStrings.cs" />
@@ -66,6 +68,7 @@
     <Compile Include="IShape.cs" />
     <Compile Include="ISheetViews.cs" />
     <Compile Include="IWorksheet.cs" />
+    <Compile Include="IWorksheetData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Impl\Row.cs" />
     <Compile Include="Impl\Shape.cs" />

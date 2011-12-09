@@ -7,7 +7,7 @@ using ExcelUtility.Utils;
 
 namespace ExcelUtility.Impl
 {
-    internal class Workbook
+    internal class Workbook : IWorkbook
     {
         private string rootFolder;
         private string path;
@@ -15,15 +15,15 @@ namespace ExcelUtility.Impl
         private ContentTypes contentTypes;
         private List<IWorksheet> worksheets = new List<IWorksheet>();
         private XElementData data;
-        private SharedStrings sharedStrings;
 
+        public SharedStrings SharedStrings { get; private set; }
         public IEnumerable<IWorksheet> Worksheets { get { return worksheets; } }
 
         public Workbook(string rootFolder, ContentTypes contentTypes, SharedStrings sharedStrings)
         {
             this.rootFolder = rootFolder;
             this.contentTypes = contentTypes;
-            this.sharedStrings = sharedStrings;
+            this.SharedStrings = sharedStrings;
             this.path = rootFolder + contentTypes.GetWorkbookPath();
             this.xlFolder = Path.GetDirectoryName(path);
             ReadContents();
@@ -45,7 +45,7 @@ namespace ExcelUtility.Impl
                 var worksheetPath = string.Format("{0}/{1}", xlFolder, target);
                 var worksheetFolder = Path.GetDirectoryName(worksheetPath);
                 var worksheetData = new XElementData(XDocument.Load(worksheetPath).Root);
-                worksheets.Add(new Worksheet(worksheetData, worksheetFolder, sharedStrings, name, sheetId));
+                worksheets.Add(new Worksheet(worksheetData, this, worksheetFolder, name, sheetId));
             }
         }
 

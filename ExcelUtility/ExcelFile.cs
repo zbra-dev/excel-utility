@@ -8,7 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace ExcelUtility
 {
-    public class ExcelFile : IDisposable
+    public class ExcelFile
     {
         public static ExcelFile Open(string filePath)
         {
@@ -47,7 +47,7 @@ namespace ExcelUtility
             workbook.Save();
         }
 
-        private void Close()
+        public void Close()
         {
             new FastZip().CreateZip(filePath, DecompressFolder, true, null);
             try
@@ -63,11 +63,6 @@ namespace ExcelUtility
         public IWorksheet OpenWorksheet(string name)
         {
             return workbook.Worksheets.FirstOrDefault(w => w.Name == name);
-        }
-
-        public void Dispose()
-        {
-            Close();
         }
     }
 }

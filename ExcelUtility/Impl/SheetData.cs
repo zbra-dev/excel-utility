@@ -5,23 +5,21 @@ using ExcelUtility.Utils;
 
 namespace ExcelUtility.Impl
 {
-    internal class SheetData
+    internal class SheetData : ISheetData
     {
         private XElementData data;
-        private double defaultRowHeight;
-        private SharedStrings sharedStrings;
         private SheetColumns sheetColumns;
         private List<IRow> rows;
 
+        public IWorksheetData Worksheet { get; private set; }
         public IEnumerable<IRow> DefinedRows { get { return rows; } }
 
-        public SheetData(XElementData data, double defaultRowHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
+        public SheetData(XElementData data, IWorksheetData worksheet, SheetColumns sheetColumns)
         {
             this.data = data;
-            this.defaultRowHeight = defaultRowHeight;
-            this.sharedStrings = sharedStrings;
+            this.Worksheet = worksheet;
             this.sheetColumns = sheetColumns;
-            rows = data.Descendants("row").Select(r => ((IRow)Row.FromExisting(r, defaultRowHeight, sharedStrings, sheetColumns))).ToList();
+            rows = data.Descendants("row").Select(r => ((IRow)Row.FromExisting(r, this))).ToList();
         }
 
         public IRow GetRow(int index)
@@ -38,7 +36,7 @@ namespace ExcelUtility.Impl
                     rowData = data.Add("row");
                 else
                     rowData = ((Row)rows[insert - 1]).Data.AddAfterSelf("row");
-                rows.Insert(insert, Row.New(rowData, index, defaultRowHeight, sharedStrings, sheetColumns));
+                rows.Insert(insert, Row.New(rowData, index, this));
             }
             return rows[insert];
         }
@@ -54,7 +52,7 @@ namespace ExcelUtility.Impl
             int insert = rows.BinarySearch(search, CompareRows);
             if (insert < 0)
                 insert = ~insert;
-            return rows.Take(insert).Sum(r => r.Height) + ((index - insert) * defaultRowHeight);
+            return rows.Take(insert).Sum(r => r.Height) + ((index - insert) * Worksheet.DefaultRowHeight);
         }
 
         private class FakeRow : IRow

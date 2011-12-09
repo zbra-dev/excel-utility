@@ -8,58 +8,53 @@ namespace ExcelUtility.Impl
 {
     internal class Row : IRow
     {
-        public static Row FromExisting(XElementData data, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
+        public static Row FromExisting(XElementData data, ISheetData sheetData)
         {
-            return new Row(data, defaultHeight, sharedStrings, sheetColumns);
+            return new Row(data, sheetData);
         }
 
-        public static Row New(XElementData data, int index, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
+        public static Row New(XElementData data, int index, ISheetData sheetData)
         {
-            return new Row(data, index, defaultHeight, sharedStrings, sheetColumns);
+            return new Row(data, index, sheetData);
         }
 
         private List<ICell> cells = null; // lazy load
-        private double defaultHeight;
-        private SharedStrings sharedStrings;
-        private SheetColumns sheetColumns;
+        private ISheetData sheetData;
+        private SharedStrings SharedStrings { get { return sheetData.Worksheet.Workbook.SharedStrings; } }
 
         public XElementData Data { get; set; }
         public int Index { get; private set; }
         public IEnumerable<ICell> DefinedCells { get { return LazyLoadCells(); } }
-        
+
         public double Height
         { 
             get 
             {
                 var ht = Data["ht"];
-                return ht == null ? defaultHeight : double.Parse(ht, NumberFormatInfo.InvariantInfo);
+                return ht == null ? sheetData.Worksheet.DefaultRowHeight : double.Parse(ht, NumberFormatInfo.InvariantInfo);
             } 
             set 
             {
-                Data.SetAttributeValue("ht", value == defaultHeight ? null : (object)value); 
+                Data.SetAttributeValue("ht", value == sheetData.Worksheet.DefaultRowHeight ? null : (object)value); 
             } 
         }
 
         // existing rows constructor
-        private Row(XElementData data, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
+        private Row(XElementData data, ISheetData sheetData)
         {
             this.Data = data;
-            this.defaultHeight = defaultHeight;
-            this.sharedStrings = sharedStrings;
-            this.sheetColumns = sheetColumns;
+            this.sheetData = sheetData;
             Index = int.Parse(data["r"], NumberFormatInfo.InvariantInfo);
             data.RemoveAttribute("spans"); // clear spans attribute, will be recalculated
         }
 
         // new rows constructor
-        private Row(XElementData data, int index, double defaultHeight, SharedStrings sharedStrings, SheetColumns sheetColumns)
+        private Row(XElementData data, int index, ISheetData sheetData)
         {
             if (index == 0)
                 throw new ArgumentException("Row index can't be zero (0)", "index");
             this.Data = data;
-            this.defaultHeight = defaultHeight;
-            this.sharedStrings = sharedStrings;
-            this.sheetColumns = sheetColumns;
+            this.sheetData = sheetData;
             Index = index;
             data.SetAttributeValue("r", index);
             data.SetAttributeValue("x14ac", "dyDescent", 0.25); // office 2010 specific attribute
@@ -85,8 +80,8 @@ namespace ExcelUtility.Impl
                 cellData = Data.Add("c");
             else
                 cellData = ((Cell)cells[cellIndex - 1]).Data.AddAfterSelf("c");
-            var newCell = Cell.New(cellData, columnName + Index, sharedStrings);
-            newCell.Style = sheetColumns.GetColumn(columnName).Style;
+            var newCell = Cell.New(cellData, columnName + Index, SharedStrings);
+            newCell.Style = sheetData.Worksheet.SheetColumns.GetColumn(columnName).Style;
             cells.Insert(cellIndex, newCell);
         }
 
@@ -106,7 +101,7 @@ namespace ExcelUtility.Impl
         private IList<ICell> LazyLoadCells()
         {
             if (cells == null)
-                cells = Data.Descendants("c").Select(c => (ICell)(Cell.FromExisting(c, sharedStrings))).ToList();
+                cells = Data.Descendants("c").Select(c => (ICell)(Cell.FromExisting(c, SharedStrings))).ToList();
             return cells;
         }
 

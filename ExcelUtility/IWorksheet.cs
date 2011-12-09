@@ -5,6 +5,7 @@ namespace ExcelUtility
     public interface IWorksheet
     {
         string Name { get; }
+        double DefaultRowHeight { get; }
         IEnumerable<IRow> DefinedRows { get; }
         IEnumerable<IColumn> DefinedColumns { get; }
         IEnumerable<IShape> Shapes { get; }

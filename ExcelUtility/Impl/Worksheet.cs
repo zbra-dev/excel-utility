@@ -8,34 +8,34 @@ using ExcelUtility.Utils;
 
 namespace ExcelUtility.Impl
 {
-    internal class Worksheet : IWorksheet
+    internal class Worksheet : IWorksheet, IWorksheetData
     {
         private const int EmuFactor = 12700;
 
         private XElementData data;
         private XElementData relationshipsData;
-        private double defaultRowHeight;
         private int sheetId;
         private string worksheetFolder;
 
         private Drawings drawings;
-        private SharedStrings sharedStrings;
-        private SheetColumns sheetColumns;
         private SheetData sheetData;
-        
+
+        public SheetColumns SheetColumns { get; private set; }        
+        public IWorkbook Workbook { get; private set; }
         public string Name { get; private set; }
+        public double DefaultRowHeight { get; private set; }
         public IEnumerable<IRow> DefinedRows { get { return sheetData.DefinedRows; } }
-        public IEnumerable<IColumn> DefinedColumns { get { return sheetColumns.DefinedColumns; } }
+        public IEnumerable<IColumn> DefinedColumns { get { return SheetColumns.DefinedColumns; } }
         public IEnumerable<IShape> Shapes { get { return drawings.Shapes; } }
         public ISheetViews SheetView { get; private set; }
 
-        public Worksheet(XElementData data, string worksheetFolder, SharedStrings sharedStrings, string name, int sheetId)
+        public Worksheet(XElementData data, IWorkbook workbook, string worksheetFolder, string name, int sheetId)
         {
             this.data = data;
+            this.Workbook = workbook;
             this.relationshipsData = new XElementData(XDocument.Load(string.Format("{0}/_rels/sheet{1}.xml.rels", worksheetFolder, sheetId)).Root);
             this.worksheetFolder = worksheetFolder;
             this.sheetId = sheetId;
-            this.sharedStrings = sharedStrings;
             Name = name;
             ReadContents();
             var dimension = data.Element("dimension");
@@ -45,10 +45,10 @@ namespace ExcelUtility.Impl
 
         private void ReadContents()
         {
-            defaultRowHeight = double.Parse(data.Element("sheetFormatPr")["defaultRowHeight"], NumberFormatInfo.InvariantInfo);
+            DefaultRowHeight = double.Parse(data.Element("sheetFormatPr")["defaultRowHeight"], NumberFormatInfo.InvariantInfo);
             var cols = data.Element("cols") ?? data.Element("sheetFormatPr").AddAfterSelf("cols");
-            sheetColumns = new SheetColumns(cols);
-            sheetData = new SheetData(data.Element("sheetData"), defaultRowHeight, sharedStrings, sheetColumns);
+            SheetColumns = new SheetColumns(cols);
+            sheetData = new SheetData(data.Element("sheetData"), this, SheetColumns);
             SheetView = new SheetViews(data.Element("sheetViews"));
             LoadDrawings();
         }
@@ -62,12 +62,12 @@ namespace ExcelUtility.Impl
 
         public IColumn GetColumn(string name)
         {
-            return sheetColumns.GetColumn(name);
+            return SheetColumns.GetColumn(name);
         }
 
         public IColumn GetColumn(int index)
         {
-            return sheetColumns.GetColumn(index);
+            return SheetColumns.GetColumn(index);
         }
 
         public IRow GetRow(int index)
@@ -109,7 +109,7 @@ namespace ExcelUtility.Impl
         {
             if (drawings != null)
                 drawings.Save();
-            sheetColumns.Save();
+            SheetColumns.Save();
             data.Save(string.Format("{0}/sheet{1}.xml", worksheetFolder, sheetId));
         }
 
