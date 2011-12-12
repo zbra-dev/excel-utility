@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -21,7 +22,7 @@ namespace ExcelUtility.Utils
         public XElementData(string prefix, XElement data)
         {
             this.data = data;
-            DefaultNamespace = data.GetNamespaceOfPrefix(prefix).ToString();
+            DefaultNamespace = GetPrefixNamespace(prefix);
         }
 
         public XElementData(XElement data)
@@ -36,9 +37,17 @@ namespace ExcelUtility.Utils
             data = new XElement(XName.Get(name, DefaultNamespace));
         }
 
+        private string GetPrefixNamespace(string prefix)
+        {
+            var prefixNamespace = data.GetNamespaceOfPrefix(prefix);
+            if (prefixNamespace == null)
+                throw new ArgumentException(string.Format("Couldn't find prefix {0}", prefix), "prefix");
+            return prefixNamespace.ToString();
+        }
+
         private XElementData New(string prefix, string name)
         {
-            return new XElementData(name: name, defaultNamespace: data.GetNamespaceOfPrefix(prefix).ToString());
+            return new XElementData(name: name, defaultNamespace: GetPrefixNamespace(prefix));
         }
 
         private XElementData New(string name)
@@ -53,7 +62,7 @@ namespace ExcelUtility.Utils
 
         public XElementData Element(string prefix, string name)
         {
-            var prefixNamespace = data.GetNamespaceOfPrefix(prefix).ToString();
+            var prefixNamespace = GetPrefixNamespace(prefix);
             var elementData = data.Element(XName.Get(name, prefixNamespace));
             return elementData == null ? null : new XElementData(elementData, prefixNamespace);
         }
@@ -84,8 +93,7 @@ namespace ExcelUtility.Utils
 
         public string AttributeValue(string prefix, string name)
         {
-            var prefixNamespace = data.GetNamespaceOfPrefix(prefix).ToString();
-            var attribute = data.Attribute(XName.Get(name, prefixNamespace));
+            var attribute = data.Attribute(XName.Get(name, GetPrefixNamespace(prefix)));
             return attribute == null ? null : attribute.Value;
         }
 
@@ -105,10 +113,14 @@ namespace ExcelUtility.Utils
             data.SetAttributeValue(XName.Get(name), null);
         }
 
+        public void RemoveAttribute(string prefix, string name)
+        {
+            data.SetAttributeValue(XName.Get(name, GetPrefixNamespace(prefix)), null);
+        }
+
         public void SetAttributeValue(string prefix, string name, object value)
         {
-            var prefixNamespace = data.GetNamespaceOfPrefix(prefix).ToString();
-            data.SetAttributeValue(XName.Get(name, prefixNamespace), value);
+            data.SetAttributeValue(XName.Get(name, GetPrefixNamespace(prefix)), value);
         }
 
         public void SetAttributeValue(string name, object value)
@@ -188,6 +200,5 @@ namespace ExcelUtility.Utils
         {
             return data.ToString();
         }
-
     }
 }

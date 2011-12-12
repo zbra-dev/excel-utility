@@ -25,6 +25,7 @@ namespace ExcelUtility.Impl
         public XElementData Data { get; set; }
         public int Index { get; private set; }
         public IEnumerable<ICell> DefinedCells { get { return LazyLoadCells(); } }
+        private bool CustomHeight { get { return object.Equals(Data["customHeight"], "1"); } set { Data.SetAttributeValue("customHeight", value ? "1" : null); } }
 
         public double Height
         { 
@@ -35,7 +36,9 @@ namespace ExcelUtility.Impl
             } 
             set 
             {
-                Data.SetAttributeValue("ht", value == sheetData.Worksheet.DefaultRowHeight ? null : (object)value); 
+                var customHeight = value != sheetData.Worksheet.DefaultRowHeight;
+                CustomHeight = customHeight;
+                Data.SetAttributeValue("ht", customHeight ? (object)value : null);
             } 
         }
 
@@ -57,7 +60,6 @@ namespace ExcelUtility.Impl
             this.sheetData = sheetData;
             Index = index;
             data.SetAttributeValue("r", index);
-            data.SetAttributeValue("x14ac", "dyDescent", 0.25); // office 2010 specific attribute
         }
 
         public ICell GetCell(string columnName)

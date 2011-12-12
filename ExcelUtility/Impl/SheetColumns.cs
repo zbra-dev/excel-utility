@@ -24,7 +24,7 @@ namespace ExcelUtility.Impl
                 ColumnRange range = new ColumnRange(columnData);
                 for (long i = range.Min - 1; i < range.Max; ++i)
                 {
-                    Column column = new Column(ColumnUtil.GetColumnName(i), i, range.Width);
+                    Column column = new Column(ColumnUtil.GetColumnName(i), i, range.Width, range.Style);
                     columns.Add(column);
                 }
             }

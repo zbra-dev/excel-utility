@@ -11,27 +11,22 @@ namespace ExcelUtility.Impl
         public double Width { get; set; }
         public int? Style { get; set; }
 
-        public Column(string name, long index, double width)
+        public Column(string name, long index, double width, int? style)
         {
             Name = name;
             Index = index;
             Width = width;
-            Style = null;
+            Style = style;
         }
 
         public Column(string name, long index)
-            : this(name, index, DefaultWidth)
+            : this(name, index, DefaultWidth, null)
         {
         }
 
         public ColumnRange ToRange(XElementData data)
         {
-            var range = new ColumnRange(data, Index + 1, Index + 1, Width);
-            if (Style != null)
-                range.Style = Style.ToString();
-            if (Width != DefaultWidth)
-                range.CustomWidth = true;
-            return range;
+            return new ColumnRange(data, Index + 1, Index + 1, Width, Style);
         }
     }
 }
