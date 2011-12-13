@@ -27,7 +27,7 @@ namespace ExcelUtility.Impl
         public IEnumerable<IRow> DefinedRows { get { return sheetData.DefinedRows; } }
         public IEnumerable<IColumn> DefinedColumns { get { return SheetColumns.DefinedColumns; } }
         public IEnumerable<IShape> Shapes { get { return drawings.Shapes; } }
-        public IEnumerable<ICell> DefinedCells { get { return GetAllDefinedCells(); } }
+        public IEnumerable<ICell> DefinedCells { get { return sheetData.DefinedRows.SelectMany(r => r.DefinedCells); } }
         public ISheetViews SheetView { get; private set; }
 
         public Worksheet(XElementData data, IWorkbook workbook, string worksheetFolder, string name, int sheetId)
@@ -112,13 +112,6 @@ namespace ExcelUtility.Impl
                 drawings.Save();
             SheetColumns.Save();
             data.Save(string.Format("{0}/sheet{1}.xml", worksheetFolder, sheetId));
-        }
-
-        private IEnumerable<ICell> GetAllDefinedCells()
-        {
-            foreach (var row in sheetData.DefinedRows)
-                foreach (var cell in row.DefinedCells)
-                    yield return cell;
         }
     }
 }
