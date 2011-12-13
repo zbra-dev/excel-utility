@@ -16,6 +16,7 @@ namespace ExcelUtility
         IRow GetRow(int index);
         ICell GetCell(string name);
         IShape DrawShape(int columnFrom, double columnFromOffset, int rowFrom, double rowFromOffset, int columnTo, double columnToOffset, int rowTo, double rowToOffset);
+        IList<ICell> GetAllCells();
 
         void Save();
     }

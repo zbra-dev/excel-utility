@@ -83,6 +83,13 @@ namespace ExcelUtility.Impl
             return sheetData.GetRow(int.Parse(match.Groups[2].Value)).GetCell(match.Groups[1].Value);
         }
 
+        public IList<ICell> GetAllCells()
+        {
+            IList<ICell> cells = new List<ICell>();
+            foreach (var row in sheetData.DefinedRows)
+                cells.AddRange(row.DefinedCells);
+            return cells;
+        }
 
         public IShape DrawShape(int columnFrom, double columnFromOffset, int rowFrom, double rowFromOffset, int columnTo, double columnToOffset, int rowTo, double rowToOffset)
         {
