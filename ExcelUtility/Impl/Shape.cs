@@ -4,31 +4,34 @@ namespace ExcelUtility.Impl
 {
     internal class Shape : IShape
     {
-        public static Shape FromExisting(XElementData data)
+        public static Shape FromExisting(XElementData data, Drawings drawings)
         {
-            return new Shape(data);
+            return new Shape(data, drawings);
         }
 
-        public static Shape New(XElementData data, int id, DrawPosition from, DrawPosition to)
+        public static Shape New(XElementData data, int id, DrawPosition from, DrawPosition to, Drawings drawings)
         {
-            return new Shape(data, id, from, to);
+            return new Shape(data, id, from, to, drawings);
         }
 
         private XElementData data;
+        private Drawings drawings;
 
         public int Id { get { return int.Parse(data.ElementAt("sp.nvSpPr.cNvPr")["id"]); } }
         public string Text { get { return data.ElementAt("sp.txBody.a:p.r.t").Value; } set { data.ElementAt("sp.txBody.a:p.r.t").Value = value; } }
         public ShapeProperties ShapeProperties { get; private set; }
 
-        private Shape(XElementData data)
+        private Shape(XElementData data, Drawings drawings)
         {
             this.data = data;
+            this.drawings = drawings;
             ShapeProperties = null; // shape properties for existing shapes will not be initialized
         }
 
-        private Shape(XElementData data, int id, DrawPosition from, DrawPosition to)
+        private Shape(XElementData data, int id, DrawPosition from, DrawPosition to, Drawings drawings)
         {
             this.data = data;
+            this.drawings = drawings;
             SetPositions(from, to);
             WriteContents(id, from, to);
         }
@@ -101,6 +104,7 @@ namespace ExcelUtility.Impl
 
         public void Remove()
         {
+            drawings.Remove(this);
             data.Remove();
         }
 

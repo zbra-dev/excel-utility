@@ -17,12 +17,12 @@ namespace ExcelUtility.Impl
         {
             this.path = path;
             this.data = new XElementData("xdr", XDocument.Load(path).Root);
-            map = data.Descendants("twoCellAnchor").Select(d => Shape.FromExisting(d)).ToDictionary(s => s.Id);
+            map = data.Descendants("twoCellAnchor").Select(d => Shape.FromExisting(d, this)).ToDictionary(s => s.Id);
         }
 
         public IShape DrawShape(DrawPosition from, DrawPosition to)
         {
-            var shape = Shape.New(data.Add("xdr", "twoCellAnchor"), map.Count == 0 ? 2 : map.Keys.Max() + 1, from, to);
+            var shape = Shape.New(data.Add("xdr", "twoCellAnchor"), map.Count == 0 ? 2 : map.Keys.Max() + 1, from, to, this);
             map.Add(shape.Id, shape);
             return shape;
         }
@@ -32,5 +32,9 @@ namespace ExcelUtility.Impl
             data.Save(path);
         }
 
+        internal void Remove(Shape shape)
+        {
+            map.Remove(shape.Id);
+        }
     }
 }
