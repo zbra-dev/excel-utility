@@ -24,7 +24,7 @@ namespace ExcelUtility.Impl
                 ColumnRange range = new ColumnRange(columnData);
                 for (long i = range.Min - 1; i < range.Max; ++i)
                 {
-                    Column column = new Column(ColumnUtil.GetColumnName(i), i, range.Width, range.Style);
+                    Column column = new Column(ColumnUtil.GetColumnName(i), i, range.Width, range.Style, this);
                     columns.Add(column);
                 }
             }
@@ -44,7 +44,7 @@ namespace ExcelUtility.Impl
 
         private Column GetColumn(long index, string name)
         {
-            Column newColumn = new Column(name, index);
+            Column newColumn = new Column(name, index, this);
             int insert = columns.BinarySearch(newColumn, CompareColumns);
             if (insert < 0)
             {
@@ -95,11 +95,16 @@ namespace ExcelUtility.Impl
 
         public double GetXPosition(long index)
         {
-            var search = new Column("", index);
+            var search = new Column("", index, this);
             int insert = columns.BinarySearch(search, CompareColumns);
             if (insert < 0)
                 insert = ~insert;
             return columns.Take(insert).Sum(c => c.Width) + ((index - insert) * Column.DefaultWidth);
+        }
+
+        internal void Remove(IColumn column)
+        {
+            columns.Remove((Column)column);
         }
     }
 }

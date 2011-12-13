@@ -9,6 +9,7 @@ namespace ExcelUtility
         IEnumerable<IRow> DefinedRows { get; }
         IEnumerable<IColumn> DefinedColumns { get; }
         IEnumerable<IShape> Shapes { get; }
+        IEnumerable<ICell> DefinedCells { get; }
         ISheetViews SheetView { get; }
         
         IColumn GetColumn(string name);
@@ -16,8 +17,7 @@ namespace ExcelUtility
         IRow GetRow(int index);
         ICell GetCell(string name);
         IShape DrawShape(int columnFrom, double columnFromOffset, int rowFrom, double rowFromOffset, int columnTo, double columnToOffset, int rowTo, double rowToOffset);
-        IList<ICell> GetAllCells();
-
+        
         void Save();
     }
 }

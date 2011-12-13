@@ -28,18 +28,18 @@ namespace ExcelUtility.Impl
         private bool CustomHeight { get { return object.Equals(Data["customHeight"], "1"); } set { Data.SetAttributeValue("customHeight", value ? "1" : null); } }
 
         public double Height
-        { 
-            get 
+        {
+            get
             {
                 var ht = Data["ht"];
                 return ht == null ? sheetData.Worksheet.DefaultRowHeight : double.Parse(ht, NumberFormatInfo.InvariantInfo);
-            } 
-            set 
+            }
+            set
             {
                 var customHeight = value != sheetData.Worksheet.DefaultRowHeight;
                 CustomHeight = customHeight;
                 Data.SetAttributeValue("ht", customHeight ? (object)value : null);
-            } 
+            }
         }
 
         // existing rows constructor
@@ -75,6 +75,12 @@ namespace ExcelUtility.Impl
             return cells[insert];
         }
 
+        public void Remove(ICell cell)
+        {
+            if (cells != null)
+                cells.Remove(cell);
+        }
+
         private void AddCell(string columnName, int cellIndex)
         {
             XElementData cellData;
@@ -82,7 +88,7 @@ namespace ExcelUtility.Impl
                 cellData = Data.Add("c");
             else
                 cellData = ((Cell)cells[cellIndex - 1]).Data.AddAfterSelf("c");
-            var newCell = Cell.New(cellData, columnName + Index, SharedStrings);
+            var newCell = Cell.New(cellData, columnName + Index, SharedStrings, this);
             newCell.Style = sheetData.Worksheet.SheetColumns.GetColumn(columnName).Style;
             cells.Insert(cellIndex, newCell);
         }
@@ -103,7 +109,7 @@ namespace ExcelUtility.Impl
         private IList<ICell> LazyLoadCells()
         {
             if (cells == null)
-                cells = Data.Descendants("c").Select(c => (ICell)(Cell.FromExisting(c, SharedStrings))).ToList();
+                cells = Data.Descendants("c").Select(c => (ICell)(Cell.FromExisting(c, SharedStrings, this))).ToList();
             return cells;
         }
 
@@ -115,6 +121,11 @@ namespace ExcelUtility.Impl
             public long LongValue { get; set; }
             public bool IsTypeString { get; set; }
             public int? Style { get; set; }
+
+            public void Remove()
+            {
+                throw new NotImplementedException();
+            }
         }
 
     }

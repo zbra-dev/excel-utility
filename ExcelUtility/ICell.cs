@@ -8,5 +8,6 @@
         string Name { get; }
         bool IsTypeString { get; }
         int? Style { get; set; }
+        void Remove();
     }
 }

@@ -27,6 +27,7 @@ namespace ExcelUtility.Impl
         public IEnumerable<IRow> DefinedRows { get { return sheetData.DefinedRows; } }
         public IEnumerable<IColumn> DefinedColumns { get { return SheetColumns.DefinedColumns; } }
         public IEnumerable<IShape> Shapes { get { return drawings.Shapes; } }
+        public IEnumerable<ICell> DefinedCells { get { return GetAllDefinedCells(); } }
         public ISheetViews SheetView { get; private set; }
 
         public Worksheet(XElementData data, IWorkbook workbook, string worksheetFolder, string name, int sheetId)
@@ -83,14 +84,7 @@ namespace ExcelUtility.Impl
             return sheetData.GetRow(int.Parse(match.Groups[2].Value)).GetCell(match.Groups[1].Value);
         }
 
-        public IList<ICell> GetAllCells()
-        {
-            IList<ICell> cells = new List<ICell>();
-            foreach (var row in sheetData.DefinedRows)
-                cells.AddRange(row.DefinedCells);
-            return cells;
-        }
-
+        
         public IShape DrawShape(int columnFrom, double columnFromOffset, int rowFrom, double rowFromOffset, int columnTo, double columnToOffset, int rowTo, double rowToOffset)
         {
             var from = CalculatePosition(columnFrom, columnFromOffset, rowFrom, rowFromOffset);
@@ -120,5 +114,11 @@ namespace ExcelUtility.Impl
             data.Save(string.Format("{0}/sheet{1}.xml", worksheetFolder, sheetId));
         }
 
+        private IEnumerable<ICell> GetAllDefinedCells()
+        {
+            foreach (var row in sheetData.DefinedRows)
+                foreach (var cell in row.DefinedCells)
+                    yield return cell;
+        }
     }
 }

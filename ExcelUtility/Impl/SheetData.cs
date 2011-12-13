@@ -75,6 +75,11 @@ namespace ExcelUtility.Impl
             {
                 throw new NotImplementedException();
             }
+
+            public void Remove(ICell cell)
+            {
+                throw new NotImplementedException();
+            }
         }
 
     }

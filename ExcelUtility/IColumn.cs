@@ -7,5 +7,6 @@ namespace ExcelUtility
         long Index { get; }
         double Width { get; set; }
         int? Style { get; set; }
+        void Remove();
     }
 }

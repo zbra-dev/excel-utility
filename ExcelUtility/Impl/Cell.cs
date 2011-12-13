@@ -5,19 +5,20 @@ namespace ExcelUtility.Impl
 {
     internal class Cell : ICell
     {
-        public static Cell FromExisting(XElementData data, SharedStrings sharedStrings)
+        public static Cell FromExisting(XElementData data, SharedStrings sharedStrings, IRow row)
         {
-            return new Cell(data, sharedStrings);
+            return new Cell(data, sharedStrings, row);
         }
 
-        public static Cell New(XElementData data, string name, SharedStrings sharedStrings)
+        public static Cell New(XElementData data, string name, SharedStrings sharedStrings, IRow row)
         {
-            return new Cell(data, name, sharedStrings);
+            return new Cell(data, name, sharedStrings, row);
         }
 
         private SharedStrings sharedStrings;
+        private IRow row;
         private string Type { get { return Data["t"]; } set { Data["t"] = value; } }
-
+        
         public XElementData Data { get; private set; }
         public bool IsTypeString { get { var type = Type; return type != null && type == "s"; } }
         public string StringValue { get { return GetStringValue(); } set { SetStringValue(value); } }
@@ -28,18 +29,20 @@ namespace ExcelUtility.Impl
         public int? Style { get { var s = Data["s"]; return s == null ? null : (int?)int.Parse(s); } set { Data.SetAttributeValue("s", value); } }
 
         // existing cells constructor
-        private Cell(XElementData data, SharedStrings sharedStrings)
+        private Cell(XElementData data, SharedStrings sharedStrings, IRow row)
         {
             this.Data = data;
             this.sharedStrings = sharedStrings;
+            this.row = row;
             Name = data["r"];
         }
 
         // new cell constructor
-        private Cell(XElementData data, string name, SharedStrings sharedStrings)
+        private Cell(XElementData data, string name, SharedStrings sharedStrings, IRow row)
         {
             this.Data = data;
             this.sharedStrings = sharedStrings;
+            this.row = row;
             Name = name;
             data["r"] = name;
         }
@@ -80,6 +83,12 @@ namespace ExcelUtility.Impl
         public override string ToString()
         {
             return string.Format("{0}={1}", Name, StringValue);
+        }
+
+        public void Remove()
+        {
+            row.Remove(this);
+            Data.Remove();
         }
     }
 }
