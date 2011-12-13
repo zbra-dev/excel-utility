@@ -20,9 +20,8 @@ namespace ExcelUtility.Impl
             }
             set
             {
-                var customWidth = value != Column.DefaultWidth;
-                CustomWidth = customWidth;
-                data.SetAttributeValue("width", customWidth ? (object)value : null);
+                CustomWidth = value != Column.DefaultWidth;
+                data.SetAttributeValue("width", value);
             }
         }
         
