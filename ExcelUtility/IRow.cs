@@ -10,6 +10,5 @@ namespace ExcelUtility
 
         ICell GetCell(string columnName);
         ICell GetCell(int columnIndex);
-        void Remove(ICell cell);
     }
 }

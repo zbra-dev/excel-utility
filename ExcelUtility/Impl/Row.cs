@@ -77,8 +77,9 @@ namespace ExcelUtility.Impl
 
         public void Remove(ICell cell)
         {
-            if (cells != null)
-                cells.Remove(cell);
+            if (cells == null)
+                LazyLoadCells();
+            cells.Remove(cell);
         }
 
         private void AddCell(string columnName, int cellIndex)
@@ -88,7 +89,7 @@ namespace ExcelUtility.Impl
                 cellData = Data.Add("c");
             else
                 cellData = ((Cell)cells[cellIndex - 1]).Data.AddAfterSelf("c");
-            var newCell = Cell.New(cellData, columnName + Index, SharedStrings, this);
+            var newCell = Cell.New(cellData, this, columnName + Index, SharedStrings);
             newCell.Style = sheetData.Worksheet.SheetColumns.GetColumn(columnName).Style;
             cells.Insert(cellIndex, newCell);
         }
@@ -109,7 +110,7 @@ namespace ExcelUtility.Impl
         private IList<ICell> LazyLoadCells()
         {
             if (cells == null)
-                cells = Data.Descendants("c").Select(c => (ICell)(Cell.FromExisting(c, SharedStrings, this))).ToList();
+                cells = Data.Descendants("c").Select(c => (ICell)(Cell.FromExisting(c, this, SharedStrings))).ToList();
             return cells;
         }
 

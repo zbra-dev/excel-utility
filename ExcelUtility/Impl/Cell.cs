@@ -5,18 +5,18 @@ namespace ExcelUtility.Impl
 {
     internal class Cell : ICell
     {
-        public static Cell FromExisting(XElementData data, SharedStrings sharedStrings, IRow row)
+        public static Cell FromExisting(XElementData data, Row row, SharedStrings sharedStrings)
         {
-            return new Cell(data, sharedStrings, row);
+            return new Cell(data, row, sharedStrings);
         }
 
-        public static Cell New(XElementData data, string name, SharedStrings sharedStrings, IRow row)
+        public static Cell New(XElementData data, Row row, string name, SharedStrings sharedStrings)
         {
-            return new Cell(data, name, sharedStrings, row);
+            return new Cell(data, row, name, sharedStrings);
         }
 
         private SharedStrings sharedStrings;
-        private IRow row;
+        private Row row;
         private string Type { get { return Data["t"]; } set { Data["t"] = value; } }
         
         public XElementData Data { get; private set; }
@@ -29,20 +29,20 @@ namespace ExcelUtility.Impl
         public int? Style { get { var s = Data["s"]; return s == null ? null : (int?)int.Parse(s); } set { Data.SetAttributeValue("s", value); } }
 
         // existing cells constructor
-        private Cell(XElementData data, SharedStrings sharedStrings, IRow row)
+        private Cell(XElementData data, Row row, SharedStrings sharedStrings)
         {
+            this.row = row;
             this.Data = data;
             this.sharedStrings = sharedStrings;
-            this.row = row;
             Name = data["r"];
         }
 
         // new cell constructor
-        private Cell(XElementData data, string name, SharedStrings sharedStrings, IRow row)
+        private Cell(XElementData data, Row row, string name, SharedStrings sharedStrings)
         {
+            this.row = row;
             this.Data = data;
             this.sharedStrings = sharedStrings;
-            this.row = row;
             Name = name;
             data["r"] = name;
         }
