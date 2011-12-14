@@ -32,7 +32,7 @@ namespace ExcelUtility.Impl
             data.Save(path);
         }
 
-        internal void Remove(Shape shape)
+        public void Remove(Shape shape)
         {
             map.Remove(shape.Id);
         }

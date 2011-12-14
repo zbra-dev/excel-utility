@@ -102,7 +102,7 @@ namespace ExcelUtility.Impl
             return columns.Take(insert).Sum(c => c.Width) + ((index - insert) * Column.DefaultWidth);
         }
 
-        internal void Remove(IColumn column)
+        public void Remove(IColumn column)
         {
             columns.Remove((Column)column);
         }

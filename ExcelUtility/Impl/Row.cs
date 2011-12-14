@@ -77,8 +77,7 @@ namespace ExcelUtility.Impl
 
         public void Remove(ICell cell)
         {
-            if (cells == null)
-                LazyLoadCells();
+			LazyLoadCells();
             cells.Remove(cell);
         }
 
