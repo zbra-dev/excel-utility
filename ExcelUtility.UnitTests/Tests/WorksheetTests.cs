@@ -26,7 +26,6 @@ namespace ExcelUtility.UnitTests.Tests
 
         public void Dispose()
         {
-            excelFile.Dispose();
         }
 
         #endregion
