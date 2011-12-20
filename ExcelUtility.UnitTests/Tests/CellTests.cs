@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Xunit;
 using System.Globalization;
-using ExcelUtility.UnitTests.Util;
+using System.Linq;
 using System.Xml.Linq;
+using ExcelUtility.UnitTests.Util;
+using Xunit;
 
 namespace ExcelUtility.UnitTests.Tests
 {

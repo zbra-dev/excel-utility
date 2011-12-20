@@ -1,10 +1,10 @@
+using System;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using ExcelUtility.UnitTests.Util;
-using Xunit;
-using System;
-using System.Globalization;
 using ExcelUtility.Utils;
+using Xunit;
 
 namespace ExcelUtility.UnitTests.Tests
 {

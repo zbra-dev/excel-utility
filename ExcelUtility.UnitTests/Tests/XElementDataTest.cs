@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Xunit;
 using ExcelUtility.UnitTests.Util;
 using ExcelUtility.Utils;
+using Xunit;
 
 namespace ExcelUtility.UnitTests.Tests
 {

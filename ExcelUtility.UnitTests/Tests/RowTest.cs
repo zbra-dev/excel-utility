@@ -1,9 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Xml.Linq;
 using ExcelUtility.UnitTests.Util;
 using Xunit;
-using System;
-using System.Globalization;
 
 namespace ExcelUtility.UnitTests.Tests
 {
