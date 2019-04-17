@@ -32,7 +32,6 @@ namespace ExcelUtility.UnitTests.Tests
             var excelFile = ExcelFile.Open(path);
             IWorksheet worksheet = excelFile.OpenWorksheet(sheetName);
 
-            Assert.DoesNotThrow(() => worksheet.GetCell("c3"));
             var cellLowerCase = worksheet.GetCell("c3");
             Assert.NotNull(cellLowerCase);
 
