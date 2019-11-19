@@ -19,8 +19,8 @@ steps:
 - task: MSBuild@1
   inputs:
     solution: '**/*.sln'
-    platform: '$(BuildPlatform)'
-    configuration: '$(BuildConfiguration)'
+    platform: 'Any CPU'
+    configuration: 'Release'
 
 - task: NuGetCommand@2
   inputs:
