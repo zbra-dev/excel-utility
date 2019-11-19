@@ -26,8 +26,9 @@ steps:
   inputs:
     command: 'pack'
     packagesToPack: 'ExcelUtility/ExcelUtility.csproj'
+    configuration: 'Release'
     versioningScheme: 'off'
-
+    
 - task: NuGetCommand@2
   inputs:
     command: 'push'
