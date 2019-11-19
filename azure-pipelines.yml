@@ -10,6 +10,9 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- task: NuGetToolInstaller@1
+  inputs:
+    versionSpec: 
 - task: MSBuild@1
   inputs:
     solution: '**/*.sln'
