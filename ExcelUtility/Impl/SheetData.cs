@@ -63,22 +63,21 @@ namespace ExcelUtility.Impl
 
             public ICell GetCell(string columnName)
             {
-                throw new NotImplementedException();
+                return null;
             }
 
             public ICell GetCell(int columnIndex)
             {
-                throw new NotImplementedException();
+                return null;
             }
 
             public IEnumerable<ICell> GetCells()
             {
-                throw new NotImplementedException();
+                return null;
             }
 
             public void Remove(ICell cell)
             {
-                throw new NotImplementedException();
             }
         }
 

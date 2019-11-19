@@ -124,7 +124,6 @@ namespace ExcelUtility.Impl
 
             public void Remove()
             {
-                throw new NotImplementedException();
             }
         }
 
