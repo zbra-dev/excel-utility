@@ -16,10 +16,9 @@ steps:
     restoreSolution: '**/*.sln'
     feedsToUse: 'select'
 
-- task: VSBuild@1
+- task: MSBuild@1
   inputs:
     solution: '**/*.sln'
-    msbuildArgs: '/p:DeployOnBuild=true /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:SkipInvalidConfigurations=true /p:PublishUrl="$(build.artifactstagingdirectory)\\"'
     platform: 'Any CPU'
     configuration: 'Release'
 
