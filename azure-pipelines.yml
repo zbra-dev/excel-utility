@@ -9,17 +9,18 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- task: NuGetToolInstaller@1
+steps: 
+- task: NuGetCommand@2
   inputs:
-    versionSpec: 
+    command: 'restore'
+    restoreSolution: '**/*.sln'
+    feedsToUse: 'select'
 - task: MSBuild@1
   inputs:
     solution: '**/*.sln'
     platform: 'Any CPU'
     configuration: 'Release'
-    restoreNugetPackages: true
-    
+
 - task: NuGetCommand@2
   inputs:
     command: 'pack'
