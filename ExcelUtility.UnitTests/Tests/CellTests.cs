@@ -9,8 +9,8 @@ namespace ExcelUtility.UnitTests.Tests
 {
     public class CellTests
     {
-        private const string path = @"D:\temp\DefaultWorksheet.xlsx";
-        private const string sheetName = "Paosdpoasdp";
+        private const string path = @"D:\Projects\Development\CS\SLB\GT\gt-core\Lib\ATTJ_Equipment_List_Template - Copy.xlsx";
+        private const string sheetName = "Equipment";
         private ReflectionUtil reflection;
 
         public CellTests()
@@ -22,6 +22,42 @@ namespace ExcelUtility.UnitTests.Tests
         const string stringValue = "Blá!";
         const string fakeStringValue = "123";
         const char charNumber = 'B';
+
+        [Fact]
+        public void TestWriteNullValueCell()
+        {
+            var excelFile = ExcelFile.Open(path);
+            IWorksheet worksheet = excelFile.OpenWorksheet(sheetName);
+            var cellName = "D19";
+
+            worksheet.GetCell(cellName).StringValue = null;
+
+            excelFile.Save();
+            
+            Assert.Null(worksheet.GetCell(cellName).StringValue);
+        }
+
+
+        [Fact]
+        public void TestWriteStringAtCell()
+        {
+            var cellName = "D18";
+            var cellValue = "Peteca";
+
+            var excelFile = ExcelFile.Open(path);
+            IWorksheet worksheet = excelFile.OpenWorksheet(sheetName);
+            worksheet.GetCell(cellName).StringValue = cellValue;
+
+            //excelFile.Save();
+            //excelFile.Close();
+
+            //excelFile = ExcelFile.Open(path);
+            //worksheet = excelFile.OpenWorksheet(sheetName);
+
+            Assert.Equal(cellValue, worksheet.GetCell(cellName).StringValue);
+            excelFile.Close();
+        }
+
 
         [Fact]
         public void TestDoubleValue()

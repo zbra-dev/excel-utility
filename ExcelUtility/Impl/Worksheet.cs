@@ -85,7 +85,7 @@ namespace ExcelUtility.Impl
 
         public ICell GetCell(string name)
         {
-            var match = Regex.Match(name, @"(\D)(\d)");
+            var match = Regex.Match(name, @"([|A-Z|a-z|]*)([\d]*)");
             if (!match.Groups[1].Success || !match.Groups[2].Success)
                 throw new ArgumentException(string.Format("Invalid cell [{0}]", name));
             return sheetData.GetRow(int.Parse(match.Groups[2].Value)).GetCell(match.Groups[1].Value);

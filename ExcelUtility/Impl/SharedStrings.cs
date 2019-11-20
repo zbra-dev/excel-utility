@@ -35,11 +35,11 @@ namespace ExcelUtility.Impl
 
         public int GetStringReferenceOf(string value)
         {
-            SharedString sharedString = null;
-            if (!map.TryGetValue(value, out sharedString))
+            var normalizedValue = value ?? string.Empty;
+            if (!map.TryGetValue(normalizedValue ?? string.Empty, out SharedString sharedString))
             {
-                sharedString = new SharedString() { Value = value, Index = map.Count };
-                map.Add(value, sharedString);
+                sharedString = new SharedString() { Value = normalizedValue, Index = map.Count };
+                map.Add(normalizedValue, sharedString);
             }
             return sharedString.Index;
         }
@@ -53,7 +53,7 @@ namespace ExcelUtility.Impl
         private void CleanUpReferences(IEnumerable<IWorksheet> worksheets)
         {
             data.RemoveNodes();
-            
+
             var cellMap = worksheets
                 .SelectMany(w => w.DefinedRows)
                 .SelectMany(r => r.DefinedCells)
@@ -69,6 +69,12 @@ namespace ExcelUtility.Impl
                 foreach (var cell in cellMap[previousIndex.ToString()])
                     cell.InternalValue = i.ToString();
             }
+        }
+
+        public string GetValueByIndex(string index)
+        {
+            map.TryGetValue(index, out SharedString sharedString);
+            return sharedString?.Value;
         }
 
         private class SharedString

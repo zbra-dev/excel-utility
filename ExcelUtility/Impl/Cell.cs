@@ -49,7 +49,7 @@ namespace ExcelUtility.Impl
 
         private string GetStringValue()
         {
-            return InternalValue;
+            return sharedStrings.GetValueByIndex(InternalValue);
         }
 
         private void SetStringValue(string value)
