@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'vs2017-win2016'
 
 steps: 
 - task: NuGetCommand@2
@@ -15,6 +15,7 @@ steps:
     command: 'restore'
     restoreSolution: '**/*.sln'
     feedsToUse: 'select'
+
 - task: MSBuild@1
   inputs:
     solution: '**/*.sln'
@@ -25,8 +26,9 @@ steps:
   inputs:
     command: 'pack'
     packagesToPack: 'ExcelUtility/ExcelUtility.csproj'
+    configuration: 'Release'
     versioningScheme: 'off'
-
+    
 - task: NuGetCommand@2
   inputs:
     command: 'push'
