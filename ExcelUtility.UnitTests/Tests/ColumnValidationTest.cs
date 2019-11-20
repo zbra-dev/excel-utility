@@ -25,7 +25,7 @@ namespace ExcelUtility.UnitTests.Tests
         {
             var excelFile = ExcelFile.Open(path);
             var worksheet = excelFile.OpenWorksheet(sheetName);
-            var columnData = (XElement)reflection.GetValue(reflection.GetValue(reflection.GetValue(worksheet, "sheetColumns"), "data"), "data");
+            var columnData = (XElement)reflection.GetValue(reflection.GetValue(reflection.GetPropertyValue(worksheet, "SheetColumns"), "data"), "data");
             Assert.NotNull(columnData);
 
             var colA = worksheet.GetColumn("A");

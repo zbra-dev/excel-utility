@@ -9,8 +9,8 @@ namespace ExcelUtility.UnitTests.Tests
 {
     public class CellTests
     {
-        private string path = @"D:/temp/DefaultWorksheet.xlsx";
-        private string sheetName = "Paosdpoasdp";
+        private const string path = @"D:\temp\DefaultWorksheet.xlsx";
+        private const string sheetName = "Paosdpoasdp";
         private ReflectionUtil reflection;
 
         public CellTests()
@@ -60,7 +60,8 @@ namespace ExcelUtility.UnitTests.Tests
             var excelFile = ExcelFile.Open(path);
             var worksheet = excelFile.OpenWorksheet(sheetName);
 
-            var sheetData = (XElement)reflection.GetValue(reflection.GetValue(worksheet, "sheetData"), "data");
+            var sheetData = (XElement)reflection.GetValue(reflection.GetValue(reflection.GetValue(worksheet, "sheetData"), "data"), "data");
+
             var cellList = sheetData.Descendants(sheetData.GetDefaultNamespace() + "c");
 
             var doubleValueCell = cellList.Where(c => c.Attribute("r").Value == "A4").FirstOrDefault();

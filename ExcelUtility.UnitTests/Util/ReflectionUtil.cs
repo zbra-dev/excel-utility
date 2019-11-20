@@ -11,12 +11,17 @@ namespace ExcelUtility.UnitTests.Util
             return TryGetFieldInfo(target, target.GetType(), name);
         }
 
+        public object GetPropertyValue(object target, string name)
+        {
+            return TryGetPropertyInfo(target, target.GetType(), name);
+        }
+
         private object TryGetPropertyInfo(object target, Type type, string name)
         {
             var propertyInfos = type.GetProperties(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             var property = propertyInfos.Where(p => p.Name == name).FirstOrDefault();
-            //return property != null ? property.GetValue(target) : null;
-            return null;
+            return property != null ? property.GetValue(target) : null;
+            // return null;
         }
 
         public object TryGetFieldInfo(object target, Type type, string fieldName)

@@ -14,13 +14,14 @@ namespace ExcelUtility.Impl
 
         private XElementData data;
         private XElementData relationshipsData;
-        private int sheetId;
-        private string worksheetFolder;
+        private readonly int sheetId;
+        private readonly string worksheetFolder;
+        private bool canDraw;
 
         private Drawings drawings;
         private SheetData sheetData;
 
-        public SheetColumns SheetColumns { get; private set; }        
+        public SheetColumns SheetColumns { get; private set; }
         public IWorkbook Workbook { get; private set; }
         public string Name { get; private set; }
         public double DefaultRowHeight { get; private set; }
@@ -51,14 +52,20 @@ namespace ExcelUtility.Impl
             SheetColumns = new SheetColumns(cols);
             sheetData = new SheetData(data.Element("sheetData"), this, SheetColumns);
             SheetView = new SheetViews(data.Element("sheetViews"));
-            LoadDrawings();
+            canDraw = TryLoadDrawings();
         }
 
-        private void LoadDrawings()
+        private bool TryLoadDrawings()
         {
+            if (data.Element("drawing") == null)
+            {
+                return false;
+            }
+
             var drawingsId = data.Element("drawing").AttributeValue("r", "id");
             var targetPath = relationshipsData.Descendants("Relationship").Single(r => r["Id"] == drawingsId)["Target"];
             drawings = new Drawings(string.Format("{0}/{1}", worksheetFolder, targetPath));
+            return true;
         }
 
         public IColumn GetColumn(string name)
@@ -84,9 +91,13 @@ namespace ExcelUtility.Impl
             return sheetData.GetRow(int.Parse(match.Groups[2].Value)).GetCell(match.Groups[1].Value);
         }
 
-        
+
         public IShape DrawShape(int columnFrom, double columnFromOffset, int rowFrom, double rowFromOffset, int columnTo, double columnToOffset, int rowTo, double rowToOffset)
         {
+            if (!canDraw)
+            {
+                return null;
+            }
             var from = CalculatePosition(columnFrom, columnFromOffset, rowFrom, rowFromOffset);
             var to = CalculatePosition(columnTo, columnToOffset, rowTo, rowToOffset);
             return drawings.DrawShape(from, to);
